@@ -26,6 +26,12 @@ class GUI {
         panelTree["menu"]!!.addChild("light", lightPanel)
         panelTree["menu"]!!.addChild("window", windowPanel)
 
+        panelTree.addChildren("one" to JPanel(), "two" to JPanel())
+        panelTree["three"] = JPanel()
+        println(panelTree.names)
+        println(panelTree.children)
+        println(panelTree.count)
+
         setPanel(panelTree)
         currentPanel = panelTree
 
@@ -49,14 +55,14 @@ class GUI {
             panel.value.add(btn)
         }
 
-        panel.getChildren().forEach { child ->
-            val btn = JButton(panel[child]!!.name)
+        panel.forEach { subPanel ->
+            val btn = JButton(subPanel.name)
             btn.addActionListener {
-                currentPanel = panel[child]
+                currentPanel = subPanel
                 updateFrame()
             }
             panel.value.add(btn)
-            setPanel(panel[child])
+            setPanel(subPanel)
         }
     }
 

@@ -1,6 +1,4 @@
-import javax.swing.*
-import jssc.*
-import java.awt.BorderLayout
+
 
 fun main(args: Array<String>) {
     val gui = GUI()
