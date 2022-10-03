@@ -1,3 +1,5 @@
+import java.awt.Color
+
 class TreeNode<T>(val name: String, val value: T){
     private val nodes: MutableMap<String, TreeNode<T>> = mutableMapOf()
 
@@ -54,4 +56,11 @@ class TreeNode<T>(val name: String, val value: T){
         }
         return output
     }
+}
+
+class ColorPalette() {
+    val background = Color(236, 229, 199)
+    val backgroundAlt = Color(205, 194, 174)
+    val accent = Color(194, 222, 209)
+    val foreground = Color(53, 66, 89)
 }
