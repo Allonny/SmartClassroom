@@ -85,16 +85,6 @@ class GUI {
         mainFrame.isVisible = true
     }
 
-    private fun setPanel(panel: TreeNode<JPanel>?) {
-        when(panel!!.name) {
-            "root" -> setWelcomePanel(panel.value)
-            "basic" -> setBasicMenuPanel(panel.value)
-            "extended" -> setExtendedMenuPanel(panel.value)
-            "admin" -> setAdminMenuPanel(panel.value)
-        }
-        panel.forEach { setPanel(it) }
-    }
-
     private fun setTopPanel() {
         if(currentPanel == null) return
 
@@ -134,6 +124,16 @@ class GUI {
         }
 
         topPanel.isVisible = true
+    }
+
+    private fun setPanel(panel: TreeNode<JPanel>?) {
+        when(panel!!.name) {
+            "root" -> setWelcomePanel(panel.value)
+            "basic" -> setBasicMenuPanel(panel.value)
+            "extended" -> setExtendedMenuPanel(panel.value)
+            "admin" -> setAdminMenuPanel(panel.value)
+        }
+        panel.forEach { setPanel(it) }
     }
 
     private fun setWelcomePanel(panel: JPanel) {
