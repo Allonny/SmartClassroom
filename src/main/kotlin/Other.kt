@@ -1,4 +1,10 @@
 import java.awt.Color
+import java.awt.Component
+import java.awt.Graphics
+
+import java.awt.Insets
+
+import javax.swing.border.Border
 
 class TreeNode<T>(val name: String, val value: T){
     private val nodes: MutableMap<String, TreeNode<T>> = mutableMapOf()
@@ -59,8 +65,27 @@ class TreeNode<T>(val name: String, val value: T){
 }
 
 class ColorPalette() {
-    val background = Color(236, 229, 199)
-    val backgroundAlt = Color(205, 194, 174)
-    val accent = Color(194, 222, 209)
-    val foreground = Color(53, 66, 89)
+    companion object {
+        val BACKGROUND =        Color(0xF2F1F6)
+        val BACKGROUND_ALT =    Color(0xDEE9E7)
+        val FOREGROUND =        Color(0x3F3F3F)
+        val FOREGROUND_ALT =    Color(0x62717E)
+        val ACCENT_LOW =        Color(0xE3F2F7)
+        val ACCENT_NORMAL =     Color(0xB5CBCC)
+        val ACCENT_HIGH =       Color(0xFFCAAF)
+        val DISABLE =           Color(0xD1D1CF)
+        val TRANSPARENT =       Color(0x00000000, true)
+    }
+    // Палитра - https://www.pinterest.com/pin/801781539899322636/
+}
+class RoundedBorder (private val radius: Int, private val background: Color) : Border {
+    override fun getBorderInsets(c: Component?): Insets = Insets(radius / 5, radius / 5, radius / 5, radius / 5)
+
+    override fun isBorderOpaque(): Boolean = true
+
+    override fun paintBorder(c: Component?, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
+        g.color = background
+        g.fillRoundRect(x, y, width - 1, height - 1, radius, radius)
+        g.drawRoundRect(x, y, width - 1, height - 1, radius, radius)
+    }
 }

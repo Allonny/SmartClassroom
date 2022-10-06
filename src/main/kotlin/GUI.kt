@@ -1,18 +1,10 @@
 import java.awt.*
-import java.io.File
-import javax.imageio.ImageIO
-import javax.swing.BorderFactory
 import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.Spring
-import javax.swing.SpringLayout
-import javax.swing.border.Border
 
 class GUI {
     private val mainFrame: JFrame = JFrame("SmartLab terminal")
@@ -39,8 +31,8 @@ class GUI {
     private val extendedSubTree: TreeNode<JPanel> = TreeNode("extended", menuExtendedPanel)
     private val adminSubTree: TreeNode<JPanel> = TreeNode("admin", menuAdminPanel)
 
-    private val topPanelButtonsSize = Dimension(100, 100)
-    private val menuButtonsSize = Dimension(400, 300)
+    private val topPanelButtonsSize = Dimension(70, 70)
+    private val menuButtonsSize = Dimension(400, 200)
 
     private var settings: MutableMap<String, Any> = mutableMapOf()
 
@@ -76,7 +68,8 @@ class GUI {
         mainFrame.setLocationRelativeTo(null)
         mainFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         mainFrame.size = Dimension(1000, 500)
-
+        System.setProperty("awt.useSystemAAFontSettings", "on")
+        System.setProperty("swing.aatext", "true")
         setPanel(rootTree)
         updateFrame()
     }
@@ -98,8 +91,7 @@ class GUI {
 
         topPanel.isVisible = false
         topPanel.removeAll()
-        topPanel.background = ColorPalette().backgroundAlt
-        topPanel.size = Dimension(mainFrame.width, 40)
+        topPanel.background = ColorPalette.BACKGROUND_ALT
         topPanel.layout = GridBagLayout()
         val constraints = GridBagConstraints()
         constraints.fill = GridBagConstraints.HORIZONTAL
@@ -107,8 +99,8 @@ class GUI {
         fun addElement(element: JComponent, width: Int, setSize: Dimension? = null) {
             constraints.gridwidth = width
             if (setSize != null) {
-                constraints.ipadx = topPanelButtonsSize.width - element.minimumSize.width
-                constraints.ipady = topPanelButtonsSize.height - element.minimumSize.height
+                constraints.ipadx = setSize.width - element.minimumSize.width
+                constraints.ipady = setSize.height - element.minimumSize.height
                 constraints.weightx = 0.0
             } else {
                 constraints.ipadx = 0
@@ -123,17 +115,15 @@ class GUI {
         constraints.insets = Insets(10, 10, 10, 10)
 
         if(currentPanel!!.parent == null) {
-            val powerButton = JButton("Питание")
-            setButtonStyle(powerButton, 15)
+            val powerButton = customButton("Питание", ColorPalette.ACCENT_HIGH, ColorPalette.FOREGROUND, labelSize = 15)
             powerButton.addActionListener{
                 currentPanel = currentPanel!!["powerMenu"]
                 updateFrame()
             }
             addElement(powerButton, 1, topPanelButtonsSize)
         } else {
-            val backButton = JButton(ImageIcon(ImageIO.read(File("resources/Back.png"))))
-
-            setButtonStyle(backButton, 15)
+            //val backButton = JButton(ImageIcon(ImageIO.read(File("resources/Back.png"))))
+            val backButton = customButton("Назад", ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND, labelSize = 15)
             backButton.addActionListener {
                 currentPanel = currentPanel!!.parent
                 updateFrame()
@@ -143,8 +133,7 @@ class GUI {
 
         addElement(JLabel("Hello world"), 4)
 
-        val settingsButton = JButton("Настройки")
-        setButtonStyle(settingsButton, 15)
+        val settingsButton = customButton("Настройки", ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND, labelSize = 15)
         if("settings" in currentPanel!!.names)
             settingsButton.addActionListener{
                 currentPanel = currentPanel!!["settings"]
@@ -154,52 +143,14 @@ class GUI {
         addElement(settingsButton, 1, topPanelButtonsSize)
 
         topPanel.isVisible = true
-
-//
-//        topPanel.isVisible = false
-//        topPanel.removeAll()
-//        topPanel.layout = BorderLayout()
-//        topPanel.size = Dimension(mainFrame.width, 50)
-//        topPanel.background = ColorPalette().backgroundAlt
-//        topPanel.border = BorderFactory.createMatteBorder(10, 10, 10, 10, ColorPalette().backgroundAlt)
-//
-//        if(currentPanel!!.parent == null) {
-//            val powerButton = JButton("Питание")
-//            setButtonStyle(powerButton, 15)
-//            powerButton.addActionListener{
-//                currentPanel = currentPanel!!["powerMenu"]
-//                updateFrame()
-//            }
-//            topPanel.add(BorderLayout.WEST, powerButton)
-//        } else {
-//            val backButton = JButton("Назад")
-//            setButtonStyle(backButton, 15)
-//            backButton.addActionListener {
-//                currentPanel = currentPanel!!.parent
-//                updateFrame()
-//            }
-//            topPanel.add(BorderLayout.WEST, backButton)
-//        }
-//
-//        if("settings" in currentPanel!!.names) {
-//            val settingsButton = JButton("Настройки")
-//            setButtonStyle(settingsButton)
-//            settingsButton.addActionListener{
-//                currentPanel = currentPanel!!["settings"]
-//                updateFrame()
-//            }
-//            topPanel.add(BorderLayout.EAST, settingsButton)
-//        }
-//
-//        topPanel.isVisible = true
     }
 
     private fun setPanel(panel: TreeNode<JPanel>?) {
         when(panel!!.name) {
             "root" -> setWelcomePanel(panel.value)
-            "basic" -> setBasicMenuPanel(panel.value)
-            "extended" -> setExtendedMenuPanel(panel.value)
-            "admin" -> setAdminMenuPanel(panel.value)
+            "basic" -> setBasicMenuPanel(panel.value, panel.children)
+            "extended" -> setExtendedMenuPanel(panel.value, panel.children)
+            "admin" -> setAdminMenuPanel(panel.value, panel.children)
         }
         panel.forEach { setPanel(it) }
     }
@@ -207,30 +158,27 @@ class GUI {
     private fun setWelcomePanel(panel: JPanel) {
         panel.removeAll()
         panel.layout = BorderLayout()
-        panel.background = ColorPalette().background
+        panel.background = ColorPalette.BACKGROUND
 
         panel.add(BorderLayout.NORTH, setTitle("Добро пожаловать"))
 
         val buttonGrid = JPanel(GridLayout(0, 1, 10, 10))
-        buttonGrid.background = ColorPalette().background
-        val basicEnterButton = JButton("Войти как студент")
-        setButtonStyle(basicEnterButton)
+        buttonGrid.background = ColorPalette.BACKGROUND
+        val basicEnterButton = customButton("Войти как студент", ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND)
         basicEnterButton.addActionListener{
             currentPanel = rootTree["basic"]
             updateFrame()
         }
         buttonGrid.add(basicEnterButton)
 
-        val extendedEnterButton = JButton("Войти как преподаватель")
-        setButtonStyle(extendedEnterButton)
+        val extendedEnterButton = customButton("Войти как преподаватель", ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND)
         extendedEnterButton.addActionListener{
             currentPanel = rootTree["extended"]
             updateFrame()
         }
         buttonGrid.add(extendedEnterButton)
 
-        val adminEnterButton = JButton("Войти как администратор")
-        setButtonStyle(adminEnterButton)
+        val adminEnterButton = customButton("Войти как администратор", ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND)
         adminEnterButton.addActionListener{
             currentPanel = rootTree["admin"]
             updateFrame()
@@ -251,138 +199,113 @@ class GUI {
 
     }
 
-    private fun setBasicMenuPanel(panel: JPanel) {
-        panel.removeAll()
-        panel.layout = BorderLayout()
-        panel.background = ColorPalette().background
+    private fun menuButton(title: String, panel: TreeNode<JPanel>): JButton {
+        var label = ""
+        when (title) {
+            "light" -> label = "Управление светом"
+            "window" -> label = "Управление проветриванием"
+            "powerSupply" -> label = "Управление питанием"
+            "addUser" -> label = "Добавить пользователя"
+        }
 
-        panel.add(BorderLayout.NORTH, setTitle("Меню"))
-
-        val buttonGrid = JPanel(GridLayout(0, 2, 10, 10))
-        buttonGrid.background = ColorPalette().background
-        val lightButton = JButton("Управление светом")
-        setButtonStyle(lightButton)
-        lightButton.addActionListener{
-            currentPanel = currentPanel!!["light"]
+        val button = customButton(label, ColorPalette.ACCENT_NORMAL, ColorPalette.FOREGROUND, size = menuButtonsSize)
+        button.addActionListener{
+            currentPanel = panel
             updateFrame()
         }
-        buttonGrid.add(lightButton)
 
-        val windowButton = JButton("Управление проветриванием")
-        setButtonStyle(windowButton)
-        windowButton.addActionListener{
-            currentPanel = currentPanel!!["window"]
-            updateFrame()
-        }
-        buttonGrid.add(windowButton)
-
-        panel.add(BorderLayout.CENTER, buttonGrid)
-        panel.add(BorderLayout.WEST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.EAST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.SOUTH, Box.createVerticalStrut(mainFrame.height / 5))
+        return button
     }
 
-    private fun setExtendedMenuPanel(panel: JPanel) {
+    private fun setBasicMenuPanel(panel: JPanel, subPanels: Collection<TreeNode<JPanel>>) {
+        val buttonsInLine = 2
+
         panel.removeAll()
-        panel.layout = BorderLayout()
-        panel.background = ColorPalette().background
+        panel.layout = GridBagLayout()
+        panel.background = ColorPalette.BACKGROUND
+        panel.size = Dimension(mainFrame.width, mainFrame.height - topPanel.height)
+        val constraints = GridBagConstraints()
+        constraints.fill = GridBagConstraints.HORIZONTAL
 
-        panel.add(BorderLayout.NORTH, setTitle("Меню"))
-
-        val buttonGrid = JPanel(GridLayout(0, 2, 10, 10))
-        buttonGrid.background = ColorPalette().background
-        val lightButton = JButton("Управление светом")
-        setButtonStyle(lightButton)
-        lightButton.addActionListener{
-            currentPanel = currentPanel!!["light"]
-            updateFrame()
+        fun setSize(element: JComponent, setSize: Dimension? = null) {
+            if (setSize != null) {
+                constraints.ipadx = setSize.width - element.minimumSize.width
+                constraints.ipady = setSize.height - element.minimumSize.height
+                constraints.weightx = 0.0
+            } else {
+                constraints.ipadx = 0
+                constraints.ipady = 0
+                constraints.weightx = 1.0
+            }
         }
-        buttonGrid.add(lightButton)
 
-        val windowButton = JButton("Управление проветриванием")
-        setButtonStyle(windowButton)
-        windowButton.addActionListener{
-            currentPanel = currentPanel!!["window"]
-            updateFrame()
+        constraints.gridx = 0
+        constraints.gridy = 0
+        constraints.weightx = 1.0
+        constraints.gridwidth = buttonsInLine + 2
+        panel.add(setTitle("Меню"), constraints)
+
+        var counter = 0
+        subPanels.forEach {
+            if (it.name != "settings") {
+                constraints.weightx = 0.0
+                constraints.gridwidth = 1
+                constraints.gridx = 1 + counter % buttonsInLine
+                constraints.gridy = 1 + counter / buttonsInLine
+                counter++
+                val button = menuButton(it.name, it)
+                setSize(button, menuButtonsSize)
+                panel.add(button, constraints)
+            }
         }
-        buttonGrid.add(windowButton)
 
-        val powerButton = JButton("Управление питанием")
-        setButtonStyle(powerButton)
-        powerButton.addActionListener{
-            currentPanel = currentPanel!!["powerSupply"]
-            updateFrame()
+        for (i in 1..(currentPanel!!.count - 1) / 2 + 1) {
+            constraints.gridy = i
+            constraints.weightx = 1.0
+            constraints.gridwidth = 1
+            for (j in arrayOf(0, buttonsInLine + 1)) {
+                val space = JLabel()
+                setSize(space, null)
+                constraints.gridx = j
+                panel.add(space, constraints)
+            }
+
         }
-        buttonGrid.add(powerButton)
-
-        panel.add(BorderLayout.CENTER, buttonGrid)
-        panel.add(BorderLayout.WEST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.EAST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.SOUTH, Box.createVerticalStrut(mainFrame.height / 5))
     }
 
-    private fun setAdminMenuPanel(panel: JPanel) {
-        panel.removeAll()
-        panel.layout = BorderLayout()
-        panel.background = ColorPalette().background
-
-        panel.add(BorderLayout.NORTH, setTitle("Меню"))
-
-        val buttonGrid = JPanel(GridLayout(0, 2, 10, 10))
-        buttonGrid.background = ColorPalette().background
-        val lightButton = JButton("Управление светом")
-        setButtonStyle(lightButton)
-        lightButton.addActionListener{
-            currentPanel = currentPanel!!["light"]
-            updateFrame()
-        }
-        buttonGrid.add(lightButton)
-
-        val windowButton = JButton("Управление проветриванием")
-        setButtonStyle(windowButton)
-        windowButton.addActionListener{
-            currentPanel = currentPanel!!["window"]
-            updateFrame()
-        }
-        buttonGrid.add(windowButton)
-
-        val powerButton = JButton("Управление питанием")
-        setButtonStyle(powerButton)
-        powerButton.addActionListener{
-            currentPanel = currentPanel!!["powerSupply"]
-            updateFrame()
-        }
-        buttonGrid.add(powerButton)
-
-        val addUserButton = JButton("Добавить пользователя")
-        setButtonStyle(addUserButton)
-        addUserButton.addActionListener{
-            currentPanel = currentPanel!!["addUser"]
-            updateFrame()
-        }
-        buttonGrid.add(addUserButton)
-
-        panel.add(BorderLayout.CENTER, buttonGrid)
-        panel.add(BorderLayout.WEST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.EAST, Box.createHorizontalStrut(mainFrame.width / 5))
-        panel.add(BorderLayout.SOUTH, Box.createVerticalStrut(mainFrame.height / 5))
+    private fun setExtendedMenuPanel(panel: JPanel, subPanels: Collection<TreeNode<JPanel>>) {
+        setBasicMenuPanel(panel, subPanels)
     }
 
-    private fun setButtonStyle(button: JButton, size: Int = 18) {
-        button.background = ColorPalette().accent
-        //button.margin = Insets(10, 10, 10, 10)
-        button.isBorderPainted = false
-        button.foreground = ColorPalette().foreground
-        button.font = Font(button.font.name, button.font.style, size)
+    private fun setAdminMenuPanel(panel: JPanel, subPanels: Collection<TreeNode<JPanel>>) {
+        setBasicMenuPanel(panel, subPanels)
+    }
+
+    private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, borderRadius: Int = 50, labelSize: Int = 18, size: Dimension? = null): JButton {
+        val button = JButton()
+        button.background = ColorPalette.TRANSPARENT
+        button.foreground = ColorPalette.TRANSPARENT
+        button.border = RoundedBorder(borderRadius, background)
+
+        val label = JLabel(title)
+        if (size != null) {
+            label.size = size
+            label.horizontalTextPosition = JLabel.CENTER
+        }
+        label.foreground = foreground
+        label.font = Font(button.font.name, button.font.style, labelSize)
+        button.add(label)
+
+        return button
     }
 
     private fun setTitle(text: String): JPanel {
         val title = JLabel(text)
         title.font = Font(title.font.name, title.font.style, 25)
-        title.foreground = ColorPalette().foreground
+        title.foreground = ColorPalette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(title)
-        titlePanel.background = ColorPalette().background
+        titlePanel.background = ColorPalette.BACKGROUND
         return titlePanel
     }
 }
