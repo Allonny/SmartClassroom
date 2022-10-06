@@ -1,9 +1,6 @@
-import java.util.*
-import java.util.concurrent.TimeUnit
+
+var settings: Map<String, Any> = mapOf()
 
 fun main(args: Array<String>) {
-    //val gui = GUI()
-    //println(gui.panelTree.toString())
-    //println(SerialIO().getData())
-    val serial = SerialIO()
+    GUI()
 }

@@ -1,8 +1,12 @@
 import java.awt.*
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
+import javax.swing.ImageIcon
 import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -34,6 +38,11 @@ class GUI {
     private val basicSubTree: TreeNode<JPanel> = TreeNode("basic", menuBasicPanel)
     private val extendedSubTree: TreeNode<JPanel> = TreeNode("extended", menuExtendedPanel)
     private val adminSubTree: TreeNode<JPanel> = TreeNode("admin", menuAdminPanel)
+
+    private val topPanelButtonsSize = Dimension(100, 100)
+    private val menuButtonsSize = Dimension(400, 300)
+
+    private var settings: MutableMap<String, Any> = mutableMapOf()
 
     init {
         basicSubTree.addChildren(
@@ -70,10 +79,9 @@ class GUI {
 
         setPanel(rootTree)
         updateFrame()
-
     }
 
-    private fun updateFrame() {
+    public fun updateFrame() {
         println(currentPanel!!.toString())
         mainFrame.contentPane.isVisible = false
         mainFrame.contentPane.removeAll()
@@ -90,10 +98,29 @@ class GUI {
 
         topPanel.isVisible = false
         topPanel.removeAll()
-        topPanel.layout = BorderLayout()
-        topPanel.size = Dimension(mainFrame.width, 50)
         topPanel.background = ColorPalette().backgroundAlt
-        topPanel.border = BorderFactory.createMatteBorder(10, 10, 10, 10, ColorPalette().backgroundAlt)
+        topPanel.size = Dimension(mainFrame.width, 40)
+        topPanel.layout = GridBagLayout()
+        val constraints = GridBagConstraints()
+        constraints.fill = GridBagConstraints.HORIZONTAL
+
+        fun addElement(element: JComponent, width: Int, setSize: Dimension? = null) {
+            constraints.gridwidth = width
+            if (setSize != null) {
+                constraints.ipadx = topPanelButtonsSize.width - element.minimumSize.width
+                constraints.ipady = topPanelButtonsSize.height - element.minimumSize.height
+                constraints.weightx = 0.0
+            } else {
+                constraints.ipadx = 0
+                constraints.ipady = 0
+                constraints.weightx = 1.0
+            }
+            topPanel.add(element, constraints)
+            constraints.gridx += width
+        }
+
+        constraints.gridx = 0
+        constraints.insets = Insets(10, 10, 10, 10)
 
         if(currentPanel!!.parent == null) {
             val powerButton = JButton("Питание")
@@ -102,28 +129,69 @@ class GUI {
                 currentPanel = currentPanel!!["powerMenu"]
                 updateFrame()
             }
-            topPanel.add(BorderLayout.WEST, powerButton)
+            addElement(powerButton, 1, topPanelButtonsSize)
         } else {
-            val backButton = JButton("Назад")
+            val backButton = JButton(ImageIcon(ImageIO.read(File("resources/Back.png"))))
+
             setButtonStyle(backButton, 15)
             backButton.addActionListener {
                 currentPanel = currentPanel!!.parent
                 updateFrame()
             }
-            topPanel.add(BorderLayout.WEST, backButton)
+            addElement(backButton, 1, topPanelButtonsSize)
         }
 
-        if("settings" in currentPanel!!.names) {
-            val settingsButton = JButton("Настройки")
-            setButtonStyle(settingsButton)
+        addElement(JLabel("Hello world"), 4)
+
+        val settingsButton = JButton("Настройки")
+        setButtonStyle(settingsButton, 15)
+        if("settings" in currentPanel!!.names)
             settingsButton.addActionListener{
                 currentPanel = currentPanel!!["settings"]
                 updateFrame()
             }
-            topPanel.add(BorderLayout.EAST, settingsButton)
-        }
+        else settingsButton.isEnabled = false
+        addElement(settingsButton, 1, topPanelButtonsSize)
 
         topPanel.isVisible = true
+
+//
+//        topPanel.isVisible = false
+//        topPanel.removeAll()
+//        topPanel.layout = BorderLayout()
+//        topPanel.size = Dimension(mainFrame.width, 50)
+//        topPanel.background = ColorPalette().backgroundAlt
+//        topPanel.border = BorderFactory.createMatteBorder(10, 10, 10, 10, ColorPalette().backgroundAlt)
+//
+//        if(currentPanel!!.parent == null) {
+//            val powerButton = JButton("Питание")
+//            setButtonStyle(powerButton, 15)
+//            powerButton.addActionListener{
+//                currentPanel = currentPanel!!["powerMenu"]
+//                updateFrame()
+//            }
+//            topPanel.add(BorderLayout.WEST, powerButton)
+//        } else {
+//            val backButton = JButton("Назад")
+//            setButtonStyle(backButton, 15)
+//            backButton.addActionListener {
+//                currentPanel = currentPanel!!.parent
+//                updateFrame()
+//            }
+//            topPanel.add(BorderLayout.WEST, backButton)
+//        }
+//
+//        if("settings" in currentPanel!!.names) {
+//            val settingsButton = JButton("Настройки")
+//            setButtonStyle(settingsButton)
+//            settingsButton.addActionListener{
+//                currentPanel = currentPanel!!["settings"]
+//                updateFrame()
+//            }
+//            topPanel.add(BorderLayout.EAST, settingsButton)
+//        }
+//
+//        topPanel.isVisible = true
     }
 
     private fun setPanel(panel: TreeNode<JPanel>?) {
@@ -140,7 +208,6 @@ class GUI {
         panel.removeAll()
         panel.layout = BorderLayout()
         panel.background = ColorPalette().background
-
 
         panel.add(BorderLayout.NORTH, setTitle("Добро пожаловать"))
 
@@ -176,11 +243,11 @@ class GUI {
         panel.add(BorderLayout.SOUTH, Box.createVerticalStrut(mainFrame.height / 5))
     }
 
-    private fun setBasicSettingsPanel() {
+    private fun setBasicSettingsPanel(panel: JPanel) {
 
     }
 
-    private fun setExtendedSettingsPanel() {
+    private fun setExtendedSettingsPanel(panel: JPanel) {
 
     }
 
@@ -303,11 +370,10 @@ class GUI {
 
     private fun setButtonStyle(button: JButton, size: Int = 18) {
         button.background = ColorPalette().accent
-        button.margin = Insets(10, 10, 10, 10)
+        //button.margin = Insets(10, 10, 10, 10)
         button.isBorderPainted = false
         button.foreground = ColorPalette().foreground
         button.font = Font(button.font.name, button.font.style, size)
-        button.size = Dimension(100, 100)
     }
 
     private fun setTitle(text: String): JPanel {

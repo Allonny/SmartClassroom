@@ -2,6 +2,7 @@ import jssc.SerialPort
 import jssc.SerialPortException
 import jssc.SerialPortList
 import kotlinx.serialization.json.*
+import java.lang.Exception
 
 class SerialIO (
     var serialSpeed: Int = 9600,
@@ -9,85 +10,83 @@ class SerialIO (
     var serialStopBits: Int = 1,
     var serialPartly: Int = 0
         ) {
-    var serialPortNames: Array<String> = arrayOf<String>()
     private var serialPort: SerialPort? = null
-
     private var receivedData: MutableMap<String, String> = mutableMapOf("one" to "1", "two" to "2")
+    private var echoMessage: Pair<String, String> = "echo" to "ECHO"
 
-    private var echoMessage: String = "ECHO"
+    val serialPortNames: Array<String> get() = SerialPortList.getPortNames()
+    val serialPortName: String? get() = if (serialPort == null) null else serialPort!!.portName
 
     init {
-        println(scanPorts().toString())
-        closePort()
-        //updatePortList()
+//        scanPorts(responseDelay = 1500)
+//        println(serialPortNames.size)
+//        println(serialPortName)
+//        closePort()
     }
 
-    fun openPort(chosenPort: String, disableListener: Boolean = false): Boolean {
-        updatePortList()
+    fun openPort(chosenPort: String): Boolean {
         if (serialPortNames.find { it == chosenPort } == null) return false
 
-        if (serialPort != null && serialPort!!.isOpened) serialPort!!.closePort()
+        closePort()
         serialPort = SerialPort(chosenPort)
 
         try {
             serialPort!!.openPort()
             serialPort!!.setParams(serialSpeed, serialDataBits, serialStopBits, serialPartly)
 
-            if (!disableListener)
-                serialPort!!.addEventListener {
-                    if (it.isRXCHAR) receivedData.putAll(parserJSON(serialPort!!.readString()!!.trim()))
-                }
-        } catch (e: SerialPortException) {
+            serialPort!!.addEventListener {
+                if (it.isRXCHAR) receivedData.putAll(parserJSON(serialPort!!.readString()!!.trim()))
+            }
+        } catch (e: Exception) {
             println(e)
         }
 
-        return serialPort!!.isOpened
+        return if(serialPort == null) false else serialPort!!.isOpened
     }
 
-    fun closePort() {
-        if (serialPort != null && serialPort!!.isOpened) serialPort!!.closePort()
-    }
+    fun closePort(): Boolean = if (serialPort != null && serialPort!!.isOpened) serialPort!!.closePort() else true
 
-    fun updatePortList(): Int {
-        serialPortNames = SerialPortList.getPortNames()
-        return serialPortNames.size
-    }
+    fun serialIsOpen(): Boolean = serialPort != null && serialPort!!.portName in serialPortNames && serialPort!!.isOpened
 
     fun sendData(data: Map<String, String>) {
-        if (serialPort!!.isOpened and data.isNotEmpty()) {
-            var dataLine: String = ""
-            data.forEach { dataLine += it.key + "=" + it.value + ";" }
-            serialPort!!.writeString(dataLine)
+        if (serialIsOpen() && data.isNotEmpty()) {
+            serialPort!!.writeString(buildJsonObject { data.forEach{ put(it.key, it.value) } }.toString())
         }
     }
 
-    fun getData(): Map<String, String>? {
-        val data = receivedData
-        receivedData.clear()
+    fun getData(vararg params: String): Map<String, String> {
+        val data = mutableMapOf<String, String>()
+        if (params.isEmpty()) {
+            data.putAll(receivedData)
+            receivedData.clear()
+        } else {
+            params.forEach {
+                if (receivedData.contains(it)) {
+                    data[it] = receivedData[it]!!
+                    receivedData.remove(it)
+                }
+            }
+        }
+
         return data
     }
 
-    private fun parserJSON(line: String): Map<String, String> = Json.parseToJsonElement(line).jsonObject.toMap().mapValues { it.value.toString().replace("\"", "") }
+    private fun parserJSON(line: String): Map<String, String> = Json.parseToJsonElement(line).jsonObject.toMap().mapValues { it.value.jsonPrimitive.content }
 
-    fun scanPorts(): String? {
-        updatePortList()
-        if (serialPort != null && !serialPort!!.isOpened && serialPort!!.portName in serialPortNames) {
-            openPort(serialPort!!.portName)
-            return serialPort!!.portName
-        }
-        if (serialPort != null && serialPort!!.isOpened) serialPort!!.closePort()
+    fun scanPorts(attempts: Int = 5, responseDelay: Long = 2000, startUpDelay: Long = responseDelay): String? {
 
+        closePort()
         var foundPort: String? = null
         serialPortNames.forEach {
             try {
-                openPort(it, true)
-                for (attempt in 1..5) {
-                    serialPort!!.writeString(buildJsonObject { put("echo", echoMessage) }.toString())
-                    Thread.sleep(1200)
-                    val receiveString = serialPort!!.readString()
-                    println(receiveString)
+                openPort(it)
+                Thread.sleep(startUpDelay)
+                for (attempt in 1..attempts) {
+                    sendData(mapOf(echoMessage))
+                    Thread.sleep(responseDelay)
+                    val response = getData(echoMessage.first)
 
-                    if (receiveString !in arrayOf(null, "") && parserJSON(receiveString!!)["echo"] == echoMessage) {
+                    if (response.isNotEmpty() && response[echoMessage.first] == echoMessage.second) {
                         foundPort = it
                         return@forEach
                     }
@@ -96,8 +95,7 @@ class SerialIO (
                 println(e)
             }
         }
-        if (foundPort == null) return null
-        openPort(foundPort!!)
-        return serialPort!!.portName
+        if (foundPort != null) openPort(foundPort as String)
+        return serialPortName
     }
 }
