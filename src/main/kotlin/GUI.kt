@@ -4,6 +4,8 @@ import java.awt.event.ComponentEvent
 import java.lang.Integer.max
 import java.lang.Integer.min
 import javax.swing.*
+import kotlin.math.abs
+import kotlin.math.sign
 
 
 class GUI {
@@ -34,9 +36,9 @@ class GUI {
 
     private var currentPanel: TreeNode<JPanel> = rootTree
 
-    private val topPanelButtonsSize = Dimension(70, 70)
-    private val loginButtonSize = Dimension(500, 50)
-    private val menuButtonsSize = Dimension(350, 150)
+    private val topPanelButtonsSize = Dimension(75, 75)
+    private val loginButtonSize = Dimension(450, 50)
+    private val menuButtonsSize = Dimension(400, 125)
     private val settingsFieldSize = Dimension(800, 100)
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 100
@@ -201,14 +203,56 @@ class GUI {
     }
 
     private fun setWelcomePanel(panel: JPanel) {
-        //val loginButton = menuButton(Labels.LOGIN, rootTree[Labels.LOGIN]!!)
+        val text = Box(BoxLayout.Y_AXIS)
+        Labels[Labels.MESSAGE].other.forEach {
+            val line = JLabel(it.value.toString())
+            line.font = Fonts.REGULAR_ALT.deriveFont(100f)
+            while (abs(line.maximumSize.width - mainFrame.width * 0.75) > 5) {
+                if (mainFrame.width * 0.75 - line.maximumSize.width > 0) {
+                    line.font = Fonts.REGULAR_ALT.deriveFont(line.font.size2D + 1f)
+                } else {
+                    line.font = Fonts.REGULAR_ALT.deriveFont(line.font.size2D - 1f)
+                }
+            }
+            line.foreground = Palette.DISABLE
+            text.add(line)
+        }
+        panel.add(text, BorderLayout.EAST)
+
+
+        val buttonPanel = JPanel()
+        val constraints = GridBagConstraints()
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        buttonPanel.background = Palette.BACKGROUND
+
+        val gridbag = GridBagLayout()
+        buttonPanel.layout = gridbag
+
+        constraints.weightx = 1.0
+        constraints.gridwidth = 1
+        for (j in arrayOf(0, 2)) {
+            val space = JLabel()
+            constraints.gridx = j
+            buttonPanel.add(space, constraints)
+        }
+
         val loginIcon = getImage(Icons.ForegroundAlt.LOGIN, loginButtonSize)
-        val loginButton = customButton(Labels[Labels.LOGIN].title, Palette.ACCENT_LOW, Palette.FOREGROUND_ALT, Palette.BACKGROUND, 10, 20, loginIcon)
+        val loginButton = customButton(Labels[Labels.LOGIN].title, Palette.ACCENT_LOW, Palette.FOREGROUND_ALT, Palette.BACKGROUND, 25, 20, loginIcon)
         loginButton.addActionListener {
             currentPanel = currentPanel[Labels.LOGIN]
             updateFrame()
         }
-        panel.add(loginButton, BorderLayout.SOUTH)
+
+        constraints.ipadx = loginButtonSize.width - loginButton.minimumSize.width
+        constraints.ipady = loginButtonSize.height - loginButton.minimumSize.height
+        constraints.weightx = 0.0
+        constraints.gridwidth = 1
+        constraints.gridx = 1
+        constraints.insets = Insets(10, 10, 10, 10)
+        buttonPanel.add(loginButton, constraints)
+
+        gridbag.setConstraints(buttonPanel, constraints)
+        panel.add(buttonPanel, BorderLayout.SOUTH)
     }
 
     private fun setLoginPanel(panel: JPanel, subPanels: Collection<TreeNode<JPanel>>) {
@@ -423,13 +467,19 @@ class GUI {
         buttonPanel.background = Palette.TRANSPARENT
         button.add(buttonPanel)
 
-        fun getLabel(): JLabel {
-            val label = JLabel("<html>${title.replace("\n", "<br>")}</html>")
-            label.horizontalAlignment = JLabel.CENTER
-            label.background = background
-            label.foreground = foreground
-            label.font = Fonts.TITLE.deriveFont(labelSize.toFloat())
-            return label
+        fun getLabel(): JPanel {
+            val text = JPanel()
+            text.layout = GridLayout(0, 1)
+            text.background = background
+            title.split("\n").forEach {
+                val line = JLabel(it)
+                line.background = background
+                line.foreground = foreground
+                line.horizontalAlignment = JLabel.CENTER
+                line.font = Fonts.TITLE.deriveFont(labelSize.toFloat())
+                text.add(line)
+            }
+            return text
         }
 
         fun getIcon(): JLabel {
