@@ -1,10 +1,6 @@
-import java.awt.Color
-import java.awt.Component
-import java.awt.Graphics
-
-import java.awt.Insets
-
+import java.awt.*
 import javax.swing.border.Border
+
 
 class TreeNode<T>(val name: String, val value: T){
     private val nodes: MutableMap<String, TreeNode<T>> = mutableMapOf()
@@ -64,7 +60,7 @@ class TreeNode<T>(val name: String, val value: T){
     }
 }
 
-class ColorPalette() {
+class Palette() {
     companion object {
         val BACKGROUND =        Color(0xF2F1F6)
         val BACKGROUND_ALT =    Color(0xDEE9E7)
@@ -87,5 +83,6 @@ class RoundedBorder (private val radius: Int, private val background: Color) : B
         g.color = background
         g.fillRoundRect(x, y, width - 1, height - 1, radius, radius)
         g.drawRoundRect(x, y, width - 1, height - 1, radius, radius)
+
     }
 }
