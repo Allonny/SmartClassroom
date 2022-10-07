@@ -90,8 +90,44 @@ class Palette {
 
 class Fonts {
     companion object {
-        val TITLE_FONT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
-        val REGULAR_FONT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
+        val TITLE: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
+        val TITLE_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/SoyuzGroteskBold/Soyuz Grotesk Bold.otf"""))
+        val REGULAR: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
+        val REGULAR_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/mont_extralightdemo.ttf"""))
+    }
+
+    // https://typefaces.temporarystate.net/preview/SoyuzGrotesk
+    // https://fonts-online.ru/fonts/mont
+    // https://blogfonts.com/aqum-two.font
+}
+
+class Icons {
+    class Foreground {
+        companion object {
+            const val ADD_USER = """resources/images/png/foreground/add_user.png"""
+            const val BACK = """resources/images/png/foreground/back.png"""
+            const val LIGHT_OFF = """resources/images/png/foreground/light_off.png"""
+            const val LIGHT_ON = """resources/images/png/foreground/light_on.png"""
+            const val LOGIN = """resources/images/png/foreground/login.png"""
+            const val POWER_MENU = """resources/images/png/foreground/power_menu.png"""
+            const val POWER_SUPPLY = """resources/images/png/foreground/power_supply.png"""
+            const val SETTINGS = """resources/images/png/foreground/settings.png"""
+            const val WINDOW = """resources/images/png/foreground/window.png"""
+        }
+    }
+
+    class ForegroundAlt {
+        companion object {
+            const val ADD_USER = """resources/images/png/foreground_alt/add_user.png"""
+            const val BACK = """resources/images/png/foreground_alt/back.png"""
+            const val LIGHT_OFF = """resources/images/png/foreground_alt/light_off.png"""
+            const val LIGHT_ON = """resources/images/png/foreground_alt/light_on.png"""
+            const val LOGIN = """resources/images/png/foreground_alt/login.png"""
+            const val POWER_MENU = """resources/images/png/foreground_alt/power_menu.png"""
+            const val POWER_SUPPLY = """resources/images/png/foreground_alt/power_supply.png"""
+            const val SETTINGS = """resources/images/png/foreground_alt/settings.png"""
+            const val WINDOW = """resources/images/png/foreground_alt/window.png"""
+        }
     }
 }
 
@@ -120,6 +156,7 @@ class Labels {
         const val POWER_SUPPLY = "powerSupply"
         const val ADD_USER = "addUser"
         const val SERIAL_PORT = "serialPort"
+        const val BACK = "back"
 
         private val fields : Map<String, TextField> = mapOf(
             TITLE to TextField("SmartLab"),
@@ -132,10 +169,11 @@ class Labels {
             EXTENDED to TextField("Войти как преподаватель", "Меню", "Что Вы желаете сделать?"),
             ADMIN to TextField("Войти как администратор", "Меню", "Что Вы желаете сделать?"),
             MENU to TextField("Меню", "Меню", "Что Вы желаете сделать?"),
-            LIGHT to TextField("Управление освещением", "Освещение"),
-            WINDOW to TextField("Управление проветриванием", "Проветривание"),
-            POWER_SUPPLY to TextField("Управление питанием оборудования", "Питание оборудования"),
-            ADD_USER to TextField("Добавление пользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
+            LIGHT to TextField("Управление\nосвещением", "Освещение"),
+            WINDOW to TextField("Управление\nпроветриванием", "Проветривание"),
+            POWER_SUPPLY to TextField("Управление\nпитанием\nоборудования", "Питание оборудования"),
+            ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
+            BACK to TextField("Назад")
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)

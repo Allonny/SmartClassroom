@@ -1,9 +1,10 @@
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.lang.Exception
 import java.lang.Integer.max
+import java.lang.Integer.min
 import javax.swing.*
+
 
 class GUI {
     private val mainFrame: JFrame = JFrame(Labels.TITLE)
@@ -34,8 +35,8 @@ class GUI {
     private var currentPanel: TreeNode<JPanel> = rootTree
 
     private val topPanelButtonsSize = Dimension(70, 70)
-    private val loginButtonSize = Dimension(500, 150)
-    private val menuButtonsSize = Dimension(300, 150)
+    private val loginButtonSize = Dimension(500, 50)
+    private val menuButtonsSize = Dimension(350, 150)
     private val settingsFieldSize = Dimension(800, 100)
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 100
@@ -142,18 +143,16 @@ class GUI {
         constraints.insets = Insets(10, 10, 10, 10)
 
         if(currentPanel.parent == currentPanel) {
-            val powerIcon = getImage("""resources/images/power.png""", topPanelButtonsSize)
-            val powerButton = customButton("Питание", Palette.ACCENT_HIGH, Palette.FOREGROUND, labelSize = 15, icon = powerIcon)
-            powerButton.background = Palette.BACKGROUND_ALT
+            val powerIcon = getImage(Icons.Foreground.POWER_MENU, topPanelButtonsSize)
+            val powerButton = customButton(Labels[Labels.POWER_MENU].title, Palette.ACCENT_HIGH, Palette.FOREGROUND, Palette.BACKGROUND_ALT, icon = powerIcon, iconOnly = true)
             powerButton.addActionListener{
-                currentPanel = currentPanel["powerMenu"]
+                currentPanel = currentPanel[Labels.POWER_MENU]
                 updateFrame()
             }
             addElement(powerButton, 1, topPanelButtonsSize)
         } else {
-            val backIcon = getImage("""resources/images/corner-up-left.png""", topPanelButtonsSize)
-            val backButton = customButton("Назад", Palette.ACCENT_NORMAL, Palette.FOREGROUND, labelSize = 15, icon = backIcon)
-            backButton.background = Palette.BACKGROUND_ALT
+            val backIcon = getImage(Icons.Foreground.BACK, topPanelButtonsSize)
+            val backButton = customButton(Labels[Labels.BACK].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, icon = backIcon, iconOnly = true)
             backButton.addActionListener {
                 currentPanel = currentPanel.parent
                 updateFrame()
@@ -163,18 +162,20 @@ class GUI {
 
         addElement(JLabel("Hello world"), 4)
 
-        val settingsIcon = getImage("""resources/images/settings.png""", topPanelButtonsSize)
-        var settingsButton = customButton("Настройки", Palette.ACCENT_NORMAL, Palette.FOREGROUND, labelSize = 15, icon = settingsIcon)
+
+        val settingsButton: JButton
         if("settings" in currentPanel.names) {
+            val settingsIcon = getImage(Icons.Foreground.SETTINGS, topPanelButtonsSize)
+            settingsButton = customButton("Настройки", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, icon = settingsIcon, iconOnly = true)
             settingsButton.addActionListener {
-                currentPanel = currentPanel["settings"]
+                currentPanel = currentPanel[Labels.SETTINGS]
                 updateFrame()
             }
         } else {
-            settingsButton = customButton("Настройки", Palette.DISABLE, Palette.FOREGROUND_ALT, labelSize = 15, icon = settingsIcon)
+            val settingsIcon = getImage(Icons.ForegroundAlt.SETTINGS, topPanelButtonsSize)
+            settingsButton = customButton("Настройки", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, icon = settingsIcon, iconOnly = true)
             settingsButton.isEnabled = false
         }
-        settingsButton.background = Palette.BACKGROUND_ALT
         addElement(settingsButton, 1, topPanelButtonsSize)
 
         topPanel.isVisible = true
@@ -201,7 +202,8 @@ class GUI {
 
     private fun setWelcomePanel(panel: JPanel) {
         //val loginButton = menuButton(Labels.LOGIN, rootTree[Labels.LOGIN]!!)
-        val loginButton = customButton(Labels[Labels.LOGIN].title, Palette.ACCENT_LOW, Palette.FOREGROUND_ALT, 20, 20)
+        val loginIcon = getImage(Icons.ForegroundAlt.LOGIN, loginButtonSize)
+        val loginButton = customButton(Labels[Labels.LOGIN].title, Palette.ACCENT_LOW, Palette.FOREGROUND_ALT, Palette.BACKGROUND, 10, 20, loginIcon)
         loginButton.addActionListener {
             currentPanel = currentPanel[Labels.LOGIN]
             updateFrame()
@@ -330,7 +332,15 @@ class GUI {
     }
 
     private fun menuButton(title: String, panel: TreeNode<JPanel>): JButton {
-        val button = customButton(Labels[title].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND)
+        var icon : ImageIcon? = null
+        when(title) {
+            Labels.LIGHT -> icon = getImage(Icons.Foreground.LIGHT_OFF, menuButtonsSize)
+            Labels.WINDOW -> icon = getImage(Icons.Foreground.WINDOW, menuButtonsSize)
+            Labels.POWER_SUPPLY -> icon = getImage(Icons.Foreground.POWER_SUPPLY, menuButtonsSize)
+            Labels.ADD_USER -> icon = getImage(Icons.Foreground.ADD_USER, menuButtonsSize)
+        }
+
+        val button = customButton(Labels[title].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND, 50, 25, icon)
         button.addActionListener{
             currentPanel = panel
             updateFrame()
@@ -364,7 +374,7 @@ class GUI {
 
         var counter = 0
         subPanels.forEach {
-            if (it.name != "settings") {
+            if (it.name != Labels.SETTINGS) {
                 constraints.weightx = 0.0
                 constraints.gridwidth = 1
                 constraints.gridx = 1 + counter % menuButtonsInLine
@@ -393,10 +403,19 @@ class GUI {
         panel.add(buttonScroll, BorderLayout.CENTER)
     }
 
-    private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, borderRadius: Int = 50, labelSize: Int = 18, icon: ImageIcon? = null): JButton {
+    private fun customButton(
+        title: String,
+        background: Color = Color.WHITE,
+        foreground: Color = Color.BLACK,
+        backing: Color = Color.GRAY,
+        borderRadius: Int = 50,
+        labelSize: Int = 25,
+        icon: ImageIcon? = null,
+        iconOnly: Boolean = false
+    ): JButton {
         val button = JButton()
         button.isDoubleBuffered = true
-        button.background = Palette.BACKGROUND
+        button.background = backing
         button.foreground = Palette.TRANSPARENT
         button.border = RoundedBorder(borderRadius, background)
         val buttonPanel = JPanel()
@@ -404,19 +423,27 @@ class GUI {
         buttonPanel.background = Palette.TRANSPARENT
         button.add(buttonPanel)
 
-        if (icon == null) {
-            val label = JLabel(title)
-
+        fun getLabel(): JLabel {
+            val label = JLabel("<html>${title.replace("\n", "<br>")}</html>")
             label.horizontalAlignment = JLabel.CENTER
             label.background = background
             label.foreground = foreground
-            label.font = Fonts.REGULAR_FONT.deriveFont(labelSize.toFloat())//Font(button.font.name, button.font.style, labelSize)
-            buttonPanel.add(label)
-        } else {
-            val label = JLabel(icon)
-            label.size = Dimension(labelSize, labelSize)
+            label.font = Fonts.TITLE.deriveFont(labelSize.toFloat())
+            return label
+        }
+
+        fun getIcon(): JLabel {
+            return JLabel(icon)
+        }
+
+        if (icon == null) {
+            buttonPanel.add(getLabel(), BorderLayout.CENTER)
+        } else if (iconOnly) {
+            buttonPanel.add(getIcon(), BorderLayout.CENTER)
             button.toolTipText = title
-            buttonPanel.add(JLabel(icon))
+        } else {
+            buttonPanel.add(getLabel(), BorderLayout.CENTER)
+            buttonPanel.add(getIcon(), BorderLayout.WEST)
         }
 
         return button
@@ -424,9 +451,9 @@ class GUI {
 
     private fun setTitle(text: String): JPanel {
         val title = JLabel(text.uppercase())
-        title.font = Fonts.TITLE_FONT.deriveFont(50f)
+        title.font = Fonts.TITLE_ALT.deriveFont(75f)
         while (title.maximumSize.width > (mainFrame.width - 20f)) {
-            title.font = Fonts.TITLE_FONT.deriveFont(title.font.size2D - 1f)
+            title.font = Fonts.TITLE_ALT.deriveFont(title.font.size2D - 1f)
         }
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
@@ -438,7 +465,10 @@ class GUI {
     private fun getImage(pathname: String, size: Dimension? = null) : ImageIcon {
         return try {
             var icon = ImageIcon(pathname)
-            if (size != null) icon = ImageIcon(icon.image.getScaledInstance(topPanelButtonsSize.width / 2, topPanelButtonsSize.height / 2, Image.SCALE_SMOOTH))
+            if (size != null) {
+                val minSize = min(size.width, size.height)
+                icon = ImageIcon(icon.image.getScaledInstance(minSize / 2, minSize / 2, Image.SCALE_SMOOTH))
+            }
             icon
         } catch (e: Exception) {
             ImageIcon()
