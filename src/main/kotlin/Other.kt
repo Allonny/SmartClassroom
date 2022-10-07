@@ -73,7 +73,7 @@ class RoundedBorder (private val radius: Int, private val background: Color) : B
     }
 }
 
-class Palette () {
+class Palette {
     companion object {
         val BACKGROUND =        Color(0xF2F1F6)
         val BACKGROUND_ALT =    Color(0xDEE9E7)
@@ -88,6 +88,13 @@ class Palette () {
     // Палитра - https://www.pinterest.com/pin/801781539899322636/
 }
 
+class Fonts {
+    companion object {
+        val TITLE_FONT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
+        val REGULAR_FONT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
+    }
+}
+
 class TextField (
     val title: String = "",
     val titleAlt: String = "",
@@ -98,23 +105,23 @@ class TextField (
 
 class Labels {
     companion object {
-        val TITLE = "title"
-        val ROOT = "root"
-        val WELCOME = "welcome"
-        val SETTINGS = "settings"
-        val POWER_MENU = "powerMenu"
-        val LOGIN = "login"
-        val BASIC = "basic"
-        val EXTENDED = "extended"
-        val ADMIN = "admin"
-        val MENU = "menu"
-        val LIGHT = "light"
-        val WINDOW = "window"
-        val POWER_SUPPLY = "powerSupply"
-        val ADD_USER = "addUser"
-        val SERIAL_PORT = "serialPort"
+        const val TITLE = "title"
+        const val ROOT = "root"
+        const val WELCOME = "welcome"
+        const val SETTINGS = "settings"
+        const val POWER_MENU = "powerMenu"
+        const val LOGIN = "login"
+        const val BASIC = "basic"
+        const val EXTENDED = "extended"
+        const val ADMIN = "admin"
+        const val MENU = "menu"
+        const val LIGHT = "light"
+        const val WINDOW = "window"
+        const val POWER_SUPPLY = "powerSupply"
+        const val ADD_USER = "addUser"
+        const val SERIAL_PORT = "serialPort"
 
-        val fields : Map<String, TextField> = mapOf(
+        private val fields : Map<String, TextField> = mapOf(
             TITLE to TextField("SmartLab"),
             ROOT to TextField("Стартовая панель", "Стартовая панель", "Добро пожаловать"),
             WELCOME to TextField("Стартовая панель", "Стартовая панель", "Добро пожаловать"),
@@ -132,12 +139,5 @@ class Labels {
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)
-    }
-}
-
-class Fonts {
-    companion object {
-        val TITLE_FONT = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
-        val REGULAR_FONT = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
     }
 }
