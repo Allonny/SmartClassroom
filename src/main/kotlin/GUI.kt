@@ -41,6 +41,7 @@ class GUI {
     private val settingsFieldSize = Dimension(800, 100)
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 100
+    private val maxTitleHeight = 100
 
     private var settings: MutableMap<String, Any> = mutableMapOf()
 
@@ -205,17 +206,24 @@ class GUI {
         val text = Box(BoxLayout.Y_AXIS)
         Labels[Labels.MESSAGE].other.forEach {
             val line = JLabel(it.value.toString())
-            line.font = Fonts.TITLE_ALT.deriveFont(100f)
-            val minSize = min(mainFrame.width, mainFrame.height) * 0.75
+//            line.font = Fonts.TITLE_ALT.deriveFont(100f)
+//
+//            var iter = 0
+//            do {
+//                iter++
+//                val diff = (minSize - line.maximumSize.width) / 10
+//                line.font = line.font.deriveFont(line.font.size2D + diff)
+//            } while (abs(diff) > 10 && iter < 10)
+
+            line.font = Fonts.TITLE_ALT
+            val minSize: Float = min(mainFrame.width, mainFrame.height) * 0.75f
+            var fontSize = 10f
             var iter = 0
-            while (abs(line.maximumSize.width - minSize) > 10 && iter < 20) {
-                iter++
-                if (minSize - line.maximumSize.width > 0) {
-                    line.font = Fonts.TITLE_ALT.deriveFont(line.font.size2D + 2.5f)
-                } else {
-                    line.font = Fonts.TITLE_ALT.deriveFont(line.font.size2D - 2.5f)
-                }
-            }
+            do {
+                line.font = line.font.deriveFont(fontSize)
+                fontSize += (minSize - line.maximumSize.width) / 20
+            } while ( abs(fontSize - line.font.size2D) > 5 && iter++ < 20 )
+
             line.foreground = Palette.ACCENT_LOW
             text.add(line)
         }
@@ -507,10 +515,15 @@ class GUI {
 
     private fun setTitle(text: String): JPanel {
         val title = JLabel(text.uppercase())
-        title.font = Fonts.TITLE.deriveFont(75f)
-        while (title.maximumSize.width > (mainFrame.width - 20f)) {
-            title.font = Fonts.TITLE.deriveFont(title.font.size2D - 1f)
-        }
+
+        title.font = Fonts.TITLE
+        var fontSize = 10f
+        var iter = 0
+        do {
+            title.font = title.font.deriveFont(fontSize)
+            fontSize += (mainFrame.width - title.maximumSize.width) / 50
+        } while (title.maximumSize.height < maxTitleHeight && iter++ < 10 )
+
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(title)
