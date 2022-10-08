@@ -176,7 +176,7 @@ class Labels {
             POWER_SUPPLY to TextField("Управление\nпитанием\nоборудования", "Питание оборудования", "Нечего энтропию за зря увеличивать"),
             ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
             BACK to TextField("Назад"),
-            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "cвою карточку", 4 to "к сканнеру (*• ω •)/"))
+            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "cвою карточку", 4 to "к сканнеру (=^ω^=)"))
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)
