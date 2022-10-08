@@ -5,7 +5,6 @@ import java.lang.Integer.max
 import java.lang.Integer.min
 import javax.swing.*
 import kotlin.math.abs
-import kotlin.math.sign
 
 
 class GUI {
@@ -206,15 +205,18 @@ class GUI {
         val text = Box(BoxLayout.Y_AXIS)
         Labels[Labels.MESSAGE].other.forEach {
             val line = JLabel(it.value.toString())
-            line.font = Fonts.REGULAR_ALT.deriveFont(100f)
-            while (abs(line.maximumSize.width - mainFrame.width * 0.75) > 5) {
-                if (mainFrame.width * 0.75 - line.maximumSize.width > 0) {
-                    line.font = Fonts.REGULAR_ALT.deriveFont(line.font.size2D + 1f)
+            line.font = Fonts.TITLE_ALT.deriveFont(100f)
+            val minSize = min(mainFrame.width, mainFrame.height) * 0.75
+            var iter = 0
+            while (abs(line.maximumSize.width - minSize) > 10 && iter < 20) {
+                iter++
+                if (minSize - line.maximumSize.width > 0) {
+                    line.font = Fonts.TITLE_ALT.deriveFont(line.font.size2D + 2.5f)
                 } else {
-                    line.font = Fonts.REGULAR_ALT.deriveFont(line.font.size2D - 1f)
+                    line.font = Fonts.TITLE_ALT.deriveFont(line.font.size2D - 2.5f)
                 }
             }
-            line.foreground = Palette.DISABLE
+            line.foreground = Palette.ACCENT_LOW
             text.add(line)
         }
         panel.add(text, BorderLayout.EAST)
@@ -297,7 +299,11 @@ class GUI {
             constraints.gridy = counter
             counter++
             constraints.insets = Insets(10, 10, 10, 10)
-            val button = menuButton(it.name, it)
+            val button = customButton(Labels[it.name].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND, 25, 20)
+            button.addActionListener { _ ->
+                currentPanel = it
+                updateFrame()
+            }
             setSize(button, loginButtonSize)
             buttonPanel.add(button, constraints)
         }
@@ -384,7 +390,7 @@ class GUI {
             Labels.ADD_USER -> icon = getImage(Icons.Foreground.ADD_USER, menuButtonsSize)
         }
 
-        val button = customButton(Labels[title].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND, 50, 25, icon)
+        val button = customButton(Labels[title].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND, 50, 30, icon)
         button.addActionListener{
             currentPanel = panel
             updateFrame()
@@ -476,7 +482,7 @@ class GUI {
                 line.background = background
                 line.foreground = foreground
                 line.horizontalAlignment = JLabel.CENTER
-                line.font = Fonts.TITLE.deriveFont(labelSize.toFloat())
+                line.font = Fonts.REGULAR.deriveFont(labelSize.toFloat())
                 text.add(line)
             }
             return text
@@ -501,9 +507,9 @@ class GUI {
 
     private fun setTitle(text: String): JPanel {
         val title = JLabel(text.uppercase())
-        title.font = Fonts.TITLE_ALT.deriveFont(75f)
+        title.font = Fonts.TITLE.deriveFont(75f)
         while (title.maximumSize.width > (mainFrame.width - 20f)) {
-            title.font = Fonts.TITLE_ALT.deriveFont(title.font.size2D - 1f)
+            title.font = Fonts.TITLE.deriveFont(title.font.size2D - 1f)
         }
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))

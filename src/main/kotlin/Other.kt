@@ -76,10 +76,10 @@ class RoundedBorder (private val radius: Int, private val background: Color) : B
 class Palette {
     companion object {
         val BACKGROUND =        Color(0xF2F1F6)
-        val BACKGROUND_ALT =    Color(0xDAD4D5)
+        val BACKGROUND_ALT =    Color(0xDCE1E4)
         val FOREGROUND =        Color(0x3F3F3F)
         val FOREGROUND_ALT =    Color(0x62717E)
-        val ACCENT_LOW =        Color(0xB5CBCC)
+        val ACCENT_LOW =        Color(0xBECDDB)
         val ACCENT_NORMAL =     Color(0xA7A3BF)
         val ACCENT_HIGH =       Color(0xFFCAAF)
         val DISABLE =           Color(0xD1D1CF)
@@ -90,10 +90,11 @@ class Palette {
 
 class Fonts {
     companion object {
-        val TITLE: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
-        val TITLE_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/SoyuzGroteskBold/Soyuz Grotesk Bold.otf"""))
-        val REGULAR: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
-        val REGULAR_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont/Commercial/OTF/MontDemo-ExtraLight.otf"""))
+        val TITLE: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/SoyuzGroteskBold/Soyuz Grotesk Bold.otf"""))
+        val TITLE_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Thin.ttf"""))
+        val REGULAR: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
+        val REGULAR_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Montserrat/static/Montserrat-Medium.ttf"""))
+
     }
 
     // https://typefaces.temporarystate.net/preview/SoyuzGrotesk
@@ -175,7 +176,7 @@ class Labels {
             POWER_SUPPLY to TextField("Управление\nпитанием\nоборудования", "Питание оборудования", "Нечего энтропию за зря увеличивать"),
             ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
             BACK to TextField("Назад"),
-            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "cвою карточку", 4 to "к сканнеру"))
+            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "cвою карточку", 4 to "к сканнеру (*• ω •)/"))
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)
