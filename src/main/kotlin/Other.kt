@@ -77,12 +77,12 @@ class RoundedBorder (private val radius: Int, private val background: Color) : B
 class Palette {
     companion object {
         val BACKGROUND =        Color(0xF2F1F6)
-        val BACKGROUND_ALT =    Color(0xDCE1E4)
+        val BACKGROUND_ALT =    Color(0xE6EAE8)
         val FOREGROUND =        Color(0x3F3F3F)
         val FOREGROUND_ALT =    Color(0x62717E)
-        val ACCENT_LOW =        Color(0xBECDDB)
-        val ACCENT_NORMAL =     Color(0xA7A3BF)
-        val ACCENT_HIGH =       Color(0xFFCAAF)
+        val ACCENT_LOW =        Color(0xD0E9E8)
+        val ACCENT_NORMAL =     Color(0xABD9C5)
+        val ACCENT_HIGH =       Color(0xE7B3A7)
         val DISABLE =           Color(0xD1D1CF)
         val TRANSPARENT =       Color(0x00000000, true)
     }
@@ -188,7 +188,7 @@ class Labels {
             POWER_SUPPLY to TextField("Управление\nпитанием\nоборудования", "Питание оборудования", "Нечего энтропию за зря увеличивать"),
             ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
             BACK to TextField("Назад"),
-            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "cвою карточку", 4 to "к сканнеру (=^ω^=)"))
+            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "свою карточку", 4 to "к сканнеру (=^ω^=)"))
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)

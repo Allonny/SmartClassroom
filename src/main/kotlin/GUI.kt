@@ -4,12 +4,16 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.lang.Integer.max
 import java.lang.Integer.min
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.swing.*
+import javax.swing.Timer
 
 class GUI {
     private val mainFrame: JFrame = JFrame(Labels.TITLE)
 
     private val topPanel: JPanel = JPanel()
+    private val timeDatePanel: JPanel = JPanel()
     private val welcomePanel: JPanel = JPanel()
     private val loginPanel: JPanel = JPanel()
 
@@ -39,7 +43,7 @@ class GUI {
     private val loginButtonsSize = Dimension(450, 50)
     private val loginButtonsInsets = Insets(10, 10, 10, 10)
     private val menuButtonsSize = Dimension(400, 125)
-    private val menuButtonsInsetns = Insets(10, 10, 10, 10)
+    private val menuButtonsInsets = Insets(10, 10, 10, 10)
     private val settingsFieldSize = Dimension(800, 100)
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 150
@@ -60,6 +64,7 @@ class GUI {
     private var settings: MutableMap<String, Any> = mutableMapOf()
 
     init {
+        setTimeDatePanel()
         basicSubTree.addChildren(
             Labels.SETTINGS to settingsBasicPanel,
             Labels.LIGHT to lightPanel,
@@ -115,11 +120,11 @@ class GUI {
         updateFrame(forceUpdate = true)
     }
 
-    fun updateValues(newSettings: MutableMap<String, Any>) {
-        settings.putAll(newSettings)
-        setPanel(rootTree, include = arrayOf(Labels.SETTINGS))
-        updateFrame()
-    }
+//    fun updateValues(newSettings: MutableMap<String, Any>) {
+//        settings.putAll(newSettings)
+//        setPanel(rootTree, include = arrayOf(Labels.SETTINGS))
+//        updateFrame()
+//    }
 
     private fun updateFrame(newCurrentPanel: TreeNode<JPanel> = currentPanel, forceUpdate: Boolean = true) {
         mainFrame.contentPane.isVisible = false
@@ -173,7 +178,7 @@ class GUI {
             addElement(backButton, 1, topPanelButtonsSize)
         }
 
-        addElement(JLabel("Hello world"), 4)
+        addElement(timeDatePanel, 1)
 
         val settingsButton: JButton
         if("settings" in currentPanel.names) {
@@ -186,6 +191,34 @@ class GUI {
         addElement(settingsButton, 1, topPanelButtonsSize)
 
         topPanel.isVisible = true
+    }
+
+    private fun setTimeDatePanel() {
+        timeDatePanel.isVisible = false
+        timeDatePanel.removeAll()
+        timeDatePanel.background = Palette.BACKGROUND_ALT
+//        timeDatePanel.layout = BorderLayout()
+        timeDatePanel.layout = BoxLayout(timeDatePanel, BoxLayout.PAGE_AXIS)
+        timeDatePanel.alignmentX = Component.CENTER_ALIGNMENT
+
+        val time = JLabel()
+        time.font = Fonts.REGULAR_ALT.deriveFont(45f)
+        time.foreground = Palette.FOREGROUND_ALT
+        time.alignmentX = Component.CENTER_ALIGNMENT
+        val date = JLabel()
+        date.font = Fonts.REGULAR_ALT.deriveFont(25f)
+        date.foreground = Palette.FOREGROUND_ALT
+        date.alignmentX = Component.CENTER_ALIGNMENT
+
+        timeDatePanel.add(time)
+        timeDatePanel.add(date)
+
+        Timer(1000) {
+            time.text = SimpleDateFormat("hh : mm").format(Date())
+            date.text = SimpleDateFormat("EEEE, dd MMMM yyyy").format(Date())
+        }.start()
+
+        this.timeDatePanel.isVisible = true
     }
 
     private fun setPanel(panel: TreeNode<JPanel>, exclude: Array<String> = arrayOf(), include: Array<String> = arrayOf()) {
@@ -247,19 +280,18 @@ class GUI {
             val minWidth = mainFrame.width - menuMinFieldWidth
             val maxSize = min(minWidth, minHeight)
             val line = adaptiveWidthLabel(it.value.toString(), Fonts.TITLE_ALT, maxSize, maxSize)
-            line.foreground = Palette.ACCENT_LOW
+            line.foreground = Palette.DISABLE
             text.add(line)
         }
         panel.value.add(text, BorderLayout.EAST)
-
 
         val buttonPanel = JPanel()
         val constraints = GridBagConstraints()
         constraints.fill = GridBagConstraints.HORIZONTAL
         buttonPanel.background = Palette.BACKGROUND
 
-        val gridbag = GridBagLayout()
-        buttonPanel.layout = gridbag
+        val layout = GridBagLayout()
+        buttonPanel.layout = layout
 
         constraints.weightx = 1.0
         constraints.gridwidth = 1
@@ -280,7 +312,7 @@ class GUI {
         constraints.insets = loginButtonsInsets
         buttonPanel.add(loginButton, constraints)
 
-        gridbag.setConstraints(buttonPanel, constraints)
+        layout.setConstraints(buttonPanel, constraints)
         panel.value.add(buttonPanel, BorderLayout.SOUTH)
     }
 
@@ -293,8 +325,8 @@ class GUI {
         buttonScroll.background = Palette.BACKGROUND
         buttonPanel.background = Palette.BACKGROUND
 
-        val gridbag = GridBagLayout()
-        buttonPanel.layout = gridbag
+        val layout = GridBagLayout()
+        buttonPanel.layout = layout
 
         fun setSize(element: JComponent, setSize: Dimension? = null) {
             if (setSize != null) {
@@ -332,7 +364,7 @@ class GUI {
             buttonPanel.add(button, constraints)
         }
 
-        gridbag.setConstraints(buttonScroll, constraints)
+        layout.setConstraints(buttonScroll, constraints)
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
 
@@ -345,8 +377,8 @@ class GUI {
         settingsScroll.background = Palette.BACKGROUND
         settingsPanel.background = Palette.BACKGROUND
 
-        val gridbag = GridBagLayout()
-        settingsPanel.layout = gridbag
+        val layout = GridBagLayout()
+        settingsPanel.layout = layout
 
         fun setSize(element: JComponent, setSize: Dimension? = null) {
             if (setSize != null) {
@@ -395,7 +427,7 @@ class GUI {
 
         }
 
-        gridbag.setConstraints(settingsScroll, constraints)
+        layout.setConstraints(settingsScroll, constraints)
         panel.value.add(settingsScroll, BorderLayout.CENTER)
 
 
@@ -428,8 +460,8 @@ class GUI {
         buttonScroll.background = Palette.BACKGROUND
         buttonPanel.background = Palette.BACKGROUND
 
-        val gridbag = GridBagLayout()
-        buttonPanel.layout = gridbag
+        val layout = GridBagLayout()
+        buttonPanel.layout = layout
 
         fun setSize(element: JComponent, setSize: Dimension? = null) {
             if (setSize != null) {
@@ -451,7 +483,7 @@ class GUI {
                 constraints.gridx = 1 + counter % menuButtonsInLine
                 constraints.gridy = counter / menuButtonsInLine
                 counter++
-                constraints.insets = menuButtonsInsetns
+                constraints.insets = menuButtonsInsets
                 val button = menuButton(it)
                 setSize(button, menuButtonsSize)
                 buttonPanel.add(button, constraints)
@@ -470,7 +502,7 @@ class GUI {
             }
         }
 
-        gridbag.setConstraints(buttonScroll, constraints)
+        layout.setConstraints(buttonScroll, constraints)
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
 
@@ -533,19 +565,6 @@ class GUI {
         titlePanel.add(title)
         titlePanel.background = Palette.BACKGROUND
         return titlePanel
-    }
-
-    private fun getImage(pathname: String, size: Dimension? = null) : ImageIcon {
-        return try {
-            var icon = ImageIcon(pathname)
-            if (size != null) {
-                val minSize = min(size.width, size.height)
-                icon = ImageIcon(icon.image.getScaledInstance(minSize / 2, minSize / 2, Image.SCALE_SMOOTH))
-            }
-            icon
-        } catch (e: Exception) {
-            ImageIcon()
-        }
     }
 
     private fun adaptiveWidthLabel(text: String, font: Font, maxWidth: Int, maxHeight: Int, maxIteration: Int = 0): JLabel {
