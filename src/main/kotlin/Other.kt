@@ -1,5 +1,6 @@
 import java.awt.*
 import java.io.File
+import javax.swing.ImageIcon
 import javax.swing.border.Border
 
 class TreeNode<T> (val name: String, val value: T) {
@@ -102,7 +103,7 @@ class Fonts {
     // https://blogfonts.com/aqum-two.font
 }
 
-class Icons {
+class Icons(size: Int, vararg iconsName: Pair<String, String>) {
     class Foreground {
         companion object {
             const val ADD_USER = """resources/images/png/foreground/add_user.png"""
@@ -130,6 +131,15 @@ class Icons {
             const val WINDOW = """resources/images/png/foreground_alt/window.png"""
         }
     }
+
+    private val icons: MutableMap<String, ImageIcon> = mutableMapOf<String, ImageIcon>().withDefault { ImageIcon() }
+    init {
+        iconsName.forEach {
+            try { icons[it.first] = ImageIcon(ImageIcon(it.second).image.getScaledInstance(size / 2, size / 2, Image.SCALE_SMOOTH)) } finally { }
+        }
+    }
+
+    operator fun get(name: String) = icons[name]
 }
 
 class TextField (
@@ -142,11 +152,12 @@ class TextField (
 
 class Labels {
     companion object {
+        const val NAME = "name"
         const val TITLE = "title"
         const val ROOT = "root"
         const val WELCOME = "welcome"
         const val SETTINGS = "settings"
-        const val POWER_MENU = "powerMenu"
+        const val POWER_MENU = "power_menu"
         const val LOGIN = "login"
         const val BASIC = "basic"
         const val EXTENDED = "extended"
@@ -154,14 +165,15 @@ class Labels {
         const val MENU = "menu"
         const val LIGHT = "light"
         const val WINDOW = "window"
-        const val POWER_SUPPLY = "powerSupply"
+        const val POWER_SUPPLY = "power_supply"
         const val ADD_USER = "addUser"
-        const val SERIAL_PORT = "serialPort"
+        const val SERIAL_PORT = "serial_port"
         const val BACK = "back"
         const val MESSAGE = "message"
 
         private val fields : Map<String, TextField> = mapOf(
-            TITLE to TextField("SmartLab"),
+            NAME to TextField("SmartLab"),
+            TITLE to TextField(),
             ROOT to TextField("Стартовая панель", "Стартовая панель", "Добро пожаловать"),
             WELCOME to TextField("Стартовая панель", "Стартовая панель", "Добро пожаловать"),
             SETTINGS to TextField("Настройки", "Настройки", "Настройки"),
