@@ -18,9 +18,9 @@ void get_data (void) {
 }
 
 void parser_data (void) {
-  for ( size_t i = 0; i < avaible_params_count; i++ ) {
-    if ( receive_params(avaible_receive_params[i]) != "" ) {
-      if ( avaible_receive_params[i] == "echo" ) echo_response(receive_params[i]);
+  for ( size_t i = 0; i < parser_pairs.pair_count; i++ ) {
+    if ( receive_params(parser_pairs.labels[i]) ) {
+      (parser_pairs.functions)[i](receive_params[parser_pairs.labels[i]]);
     }
   }
   receive_params.destroy();

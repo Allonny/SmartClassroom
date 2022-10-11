@@ -14,22 +14,23 @@ class GUI {
 
     private val topPanel: JPanel = JPanel()
     private val timeDatePanel: JPanel = JPanel()
-    private val welcomePanel: JPanel = JPanel()
-    private val loginPanel: JPanel = JPanel()
 
-    private val powerMenuPanel: JPanel = JPanel()
-    private val settingsBasicPanel: JPanel = JPanel()
-    private val settingsExtendedPanel: JPanel = JPanel()
-    private val settingsAdminPanel: JPanel = JPanel()
+    private val welcomePanel: JPanel = JPanel(BorderLayout())
+    private val loginPanel: JPanel = JPanel(BorderLayout())
+    private val powerMenuPanel: JPanel = JPanel(BorderLayout())
 
-    private val menuBasicPanel: JPanel = JPanel()
-    private val menuExtendedPanel: JPanel = JPanel()
-    private val menuAdminPanel: JPanel = JPanel()
+    private val settingsBasicPanel: JPanel = JPanel(BorderLayout())
+    private val settingsExtendedPanel: JPanel = JPanel(BorderLayout())
+    private val settingsAdminPanel: JPanel = JPanel(BorderLayout())
 
-    private val lightPanel: JPanel = JPanel()
-    private val windowPanel: JPanel = JPanel()
-    private val powerSupplyPanel: JPanel = JPanel()
-    private val addUserPanel: JPanel = JPanel()
+    private val menuBasicPanel: JPanel = JPanel(BorderLayout())
+    private val menuExtendedPanel: JPanel = JPanel(BorderLayout())
+    private val menuAdminPanel: JPanel = JPanel(BorderLayout())
+
+    private val lightPanel: JPanel = JPanel(BorderLayout())
+    private val windowPanel: JPanel = JPanel(BorderLayout())
+    private val powerSupplyPanel: JPanel = JPanel(BorderLayout())
+    private val addUserPanel: JPanel = JPanel(BorderLayout())
 
     private val rootTree: TreeNode<JPanel> = TreeNode(Labels.ROOT, welcomePanel)
     private val basicSubTree: TreeNode<JPanel> = TreeNode(Labels.BASIC, menuBasicPanel)
@@ -62,6 +63,8 @@ class GUI {
     private val loginButtonIcon = Icons(min(loginButtonsSize.width, loginButtonsSize.height), Labels.LOGIN to Icons.ForegroundAlt.LOGIN)
 
     private var settings: MutableMap<String, Any> = mutableMapOf()
+
+
 
     init {
         setTimeDatePanel()
@@ -98,11 +101,6 @@ class GUI {
 
         currentPanel = rootTree
 
-        mainFrame.setLocationRelativeTo(null)
-        mainFrame.background = Palette.BACKGROUND
-        mainFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        mainFrame.size = Dimension(1000, 500)
-
         mainFrame.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(componentEvent: ComponentEvent?) {
                 val panelsForUpdate = arrayListOf(Labels.TITLE, Labels.ROOT)
@@ -116,8 +114,22 @@ class GUI {
             }
         })
 
+        mainFrame.background = Palette.BACKGROUND
+        mainFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        mainFrame.size = Dimension(1280, 720)
+        mainFrame.setLocationRelativeTo(null)
+
         setPanel(rootTree)
         updateFrame(forceUpdate = true)
+    }
+
+    private fun serialParser(receivedData: MutableMap<String, String>): Array<String> {
+        val processedLines = arrayListOf<String>()
+        receivedData.forEach { (param, value) ->
+            println("$param - $value")
+            receivedData.remove(param)
+        }
+        return processedLines.toTypedArray()
     }
 
 //    fun updateValues(newSettings: MutableMap<String, Any>) {
@@ -244,7 +256,6 @@ class GUI {
                     Labels.LOGIN -> setLoginPanel(panel)
                 }
             }
-
         }
 
         if (exclude.isNotEmpty() && include.isNotEmpty()) return
@@ -252,6 +263,7 @@ class GUI {
         runBlocking {
             coroutineScope {
                 panel.value.isVisible = false
+                launch { panel.forEach { setPanel(it, exclude, include) } }
                 if (exclude.isNotEmpty()) {
                     launch { if (Labels.TITLE !in exclude) drawTitle() }
                     launch { if (panel.name !in exclude) drawContent() }
@@ -259,16 +271,15 @@ class GUI {
                     launch { if (Labels.TITLE in include) drawTitle() }
                     launch { if (panel.name in include) drawContent() }
                 } else {
-                    if (panel.value.layout != BorderLayout()) panel.value.layout = BorderLayout()
                     panel.value.background = Palette.BACKGROUND
                     launch { drawTitle() }
                     launch { drawContent() }
                 }
-                panel.value.isVisible = true
-                mainFrame.isVisible = true
-                panel.forEach { launch { setPanel(it, exclude, include) } }
+
             }
         }
+        panel.value.isVisible = true
+        mainFrame.isVisible = true
     }
 
     private fun setWelcomePanel(panel: TreeNode<JPanel>) {
