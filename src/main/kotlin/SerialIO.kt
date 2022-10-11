@@ -5,10 +5,12 @@ import kotlinx.serialization.json.*
 import java.lang.Exception
 
 class SerialIO (
+    val parser: (MutableMap<String, String>) -> Array<String>,
     var serialSpeed: Int = 9600,
     var serialDataBits: Int = 8,
     var serialStopBits: Int = 1,
-    var serialPartly: Int = 0
+    var serialPartly: Int = 0,
+    val autoConnect: Boolean = false
         ) {
     private var serialPort: SerialPort? = null
     private var receivedData: MutableMap<String, String> = mutableMapOf("one" to "1", "two" to "2")
@@ -18,10 +20,7 @@ class SerialIO (
     val serialPortName: String? get() = if (serialPort == null) null else serialPort!!.portName
 
     init {
-//        scanPorts(responseDelay = 1500)
-//        println(serialPortNames.size)
-//        println(serialPortName)
-//        closePort()
+        if (autoConnect) scanPorts(responseDelay = 1500)
     }
 
     fun openPort(chosenPort: String): Boolean {
@@ -34,8 +33,15 @@ class SerialIO (
             serialPort!!.openPort()
             serialPort!!.setParams(serialSpeed, serialDataBits, serialStopBits, serialPartly)
 
-            serialPort!!.addEventListener {
-                if (it.isRXCHAR) receivedData.putAll(parserJSON(serialPort!!.readString()!!.trim()))
+            serialPort!!.addEventListener { event ->
+                if (event.isRXCHAR) {
+                    try {
+                        receivedData.putAll(parserJSON(serialPort!!.readString()!!.trim()))
+                        parser(receivedData).forEach { param -> receivedData.remove(param) }
+                    } finally {
+
+                    }
+                }
             }
         } catch (e: Exception) {
             println(e)
