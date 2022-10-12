@@ -13,7 +13,7 @@ void settings_load (void) {
   }
 
   settings_reset(false);
-  for_send(LOAD_LABEL, KEYWORD_DONE);
+  for_send(LABEL_LOAD, KEYWORD_DONE);
 }
 
 void settings_save (void) {
@@ -26,7 +26,7 @@ void settings_save (void) {
       EEPROM.update(settings_params[i].address + j, param_value[j]);
     }
   }
-  for_send(SAVE_LABEL, KEYWORD_DONE);
+  for_send(LABEL_SAVE, KEYWORD_DONE);
 }
 
 void setting_update (String param, String param_value) {

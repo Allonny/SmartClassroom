@@ -18,18 +18,18 @@
 #define setting_power_supply_address 192
 
 #define PAIRS 8
-#define SYSTEM_LABEL "system"
-#define RESET_LABEL "reset"
-#define ECHO_LABEL "echo"
-#define ERROR_LABEL "error"
-#define UID_LABEL "uid"
-#define LIGHT_LABEL "light"
-#define WINDOW_LABEL "window"
-#define POWER_SUPPLY_LABEL "power_supply"
+#define LABEL_SYSTEM "system"
+#define LABEL_RESET "reset"
+#define LABEL_ECHO "echo"
+#define LABEL_ERROR "error"
+#define LABEL_UID "uid"
+#define LABEL_LIGHT "light"
+#define LABEL_WINDOW "window"
+#define LABEL_POWER_SUPPLY "power_supply"
 
-#define STARTUP_LABEL "startup"
-#define SAVE_LABEL "save"
-#define LOAD_LABEL "load"
+#define LABEL_STARTUP "startup"
+#define LABEL_SAVE "save"
+#define LABEL_LOAD "load"
 
 #define KEYWORD_GET "GET"
 #define KEYWORD_RESET "RESET"
@@ -42,5 +42,6 @@
 #define KEYWORD_TRUE "TRUE"
 #define KEYWORD_FALSE "FALSE"
 #define KEYWORD_EMPTY "EMPTY"
+#define KEYWORD_ENDLINE "ENDLINE"
 #define KEYWORD_SCANNER_NOT_FOUND "SCANNER_NOT_FOUND"
 #define KEYWORD_INVALID_INPUT "INVALID_INPUT"

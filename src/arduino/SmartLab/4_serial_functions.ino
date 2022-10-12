@@ -4,7 +4,8 @@ void for_send (String param, String param_value) {
 
 void send_data (void) {
   if ( send_params.count() ) {
-    Serial.println(send_params.json());
+    String send_line = send_params.json() + KEYWORD_ENDLINE;
+    Serial.println(send_line);
     send_params.destroy();
   }
 }

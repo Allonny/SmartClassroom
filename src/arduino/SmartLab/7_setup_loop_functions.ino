@@ -10,7 +10,7 @@ void setup(void) {
   nfc.SAMConfig();
   
   settings_load();
-  for_send(STARTUP_LABEL, KEYWORD_DONE);
+  for_send(LABEL_STARTUP, KEYWORD_DONE);
 }
 
 void loop(void) {
