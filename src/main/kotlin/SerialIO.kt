@@ -122,7 +122,6 @@ class SerialIO (
         closePort()
         var foundPort: String? = null
         Thread {
-            println("Тред")
             serialPortNames.forEach {
                 try {
                     openPort(it)
@@ -143,21 +142,30 @@ class SerialIO (
             }
 
             if (foundPort != null) openPort(foundPort as String)
-            listener.portFound(serialPortName as String)
+            listener.portFound(serialPortName)
         }.start()
     }
 
     interface SerialPortListener {
-        fun dataReceived(receivedData: Map<String, String>)
-        fun portFound(portName: String)
+        var dataReceived: (Map<String, String>) -> Unit
+            get() = dataReceived
+            set(value) { dataReceived = value }
+        var portFound: (String?) -> Unit
+            get() = portFound
+            set(value) { portFound = value }
+
     }
 
-    private lateinit var listener: SerialPortListener
+    private var listener: SerialPortListener = object : SerialPortListener {
+        override var dataReceived: (Map<String, String>) -> Unit = {}
+        override var portFound: (String?) -> Unit = {}
+    }
 
-    fun addSerialPortListener(portFount: (String) -> Unit = {}, dataReceived: (Map<String, String>) -> Unit = {}) {
-        listener = object : SerialPortListener {
-            override fun dataReceived(receivedData: Map<String, String>) { dataReceived(receivedData) }
-            override fun portFound(portName: String) { portFount(portName) }
-        }
+    fun addPortFoundListener(portFount: (String?) -> Unit) {
+        this.listener.portFound = portFount
+    }
+
+    fun addDataReceivedListener(dataReceived: (Map<String, String>) -> Unit) {
+        this.listener.dataReceived = dataReceived
     }
 }

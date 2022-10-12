@@ -67,25 +67,28 @@ class GUI {
     private val arduinoSerial: SerialIO = SerialIO(19200, autoConnect = true)
 
     init {
-        arduinoSerial.addSerialPortListener({
-            println(it)
-        }, {
-            it.forEach { t, u ->
-                println("$t $u")
+        arduinoSerial.addDataReceivedListener {
+            it.forEach { (param, value) ->
+                when (param) {
+                    SerialIO.LABEL_SYSTEM -> println("1 - $value")
+                    SerialIO.LABEL_RESET -> println("2 - $value")
+                    SerialIO.LABEL_ECHO -> println("3 - $value")
+                    SerialIO.LABEL_ERROR -> println("4 - $value")
+                    SerialIO.LABEL_UID -> println("5 - $value")
+                    SerialIO.LABEL_LIGHT -> println("6 - $value")
+                    SerialIO.LABEL_WINDOW -> println("7 - $value")
+                    SerialIO.LABEL_POWER_SUPPLY -> println("8 - $value")
+                    SerialIO.LABEL_STARTUP -> println("9 - $value")
+                    SerialIO.LABEL_SAVE -> println("10 - $value")
+                    SerialIO.LABEL_LOAD -> println("11 - $value")
+                }
             }
-        })
-//        arduinoSerial.addDataReceivedListener {
-//            it.forEach { (t, u) ->
-//                println("$t $u")
-//                arduinoSerial.removeData(t)
-//            }
-//        }
-//
-//        arduinoSerial.addPortFoundListener {
-//            println(it)
-//        }
+            arduinoSerial.removeData()
+        }
 
-
+        arduinoSerial.addPortFoundListener {
+            println(it)
+        }
 
         setTimeDatePanel()
         basicSubTree.addChildren(
