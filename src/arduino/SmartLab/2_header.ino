@@ -39,14 +39,14 @@ typedef struct label_funcs_pairs {
   const size_t pair_count = PAIRS;
   
   String labels[PAIRS] = {
-    SYSTEM_LABEL,
-    RESET_LABEL,
-    ECHO_LABEL,
-    ERROR_LABEL,
-    UID_LABEL,
-    LIGHT_LABEL,
-    WINDOW_LABEL,
-    POWER_SUPPLY_LABEL};
+    LABEL_SYSTEM,
+    LABEL_RESET,
+    LABEL_ECHO,
+    LABEL_ERROR,
+    LABEL_UID,
+    LABEL_LIGHT,
+    LABEL_WINDOW,
+    LABEL_POWER_SUPPLY};
     
   func_type functions[PAIRS] = {
     &system_request,

@@ -21,8 +21,8 @@ String light_default = "0";
 String window_default = "0";
 String power_supply_default = KEYWORD_FALSE;
 setting_const settings_params[] = {
-  get_setting(UID_LABEL, uid_default, setting_uid_address),
-  get_setting(LIGHT_LABEL, light_default, setting_light_address),
-  get_setting(WINDOW_LABEL, window_default, setting_window_address),
-  get_setting(POWER_SUPPLY_LABEL, power_supply_default, setting_power_supply_address)};
+  get_setting(LABEL_UID, uid_default, setting_uid_address),
+  get_setting(LABEL_LIGHT, light_default, setting_light_address),
+  get_setting(LABEL_WINDOW, window_default, setting_window_address),
+  get_setting(LABEL_POWER_SUPPLY, power_supply_default, setting_power_supply_address)};
 const size_t settings_params_count = sizeof(settings_params) / sizeof(settings_params[0]);

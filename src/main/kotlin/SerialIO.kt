@@ -5,22 +5,53 @@ import kotlinx.serialization.json.*
 import java.lang.Exception
 
 class SerialIO (
-    val parser: (MutableMap<String, String>) -> Array<String>,
     var serialSpeed: Int = 9600,
     var serialDataBits: Int = 8,
     var serialStopBits: Int = 1,
     var serialPartly: Int = 0,
     val autoConnect: Boolean = false
         ) {
+    companion object {
+        const val LABEL_SYSTEM = "system"
+        const val LABEL_RESET = "reset"
+        const val LABEL_ECHO = "echo"
+        const val LABEL_ERROR = "error"
+        const val LABEL_UID = "uid"
+        const val LABEL_LIGHT = "light"
+        const val LABEL_WINDOW = "window"
+        const val LABEL_POWER_SUPPLY = "power_supply"
+
+        const val LABEL_STARTUP = "startup"
+        const val LABEL_SAVE = "save"
+        const val LABEL_LOAD = "load"
+
+        const val KEYWORD_GET = "GET"
+        const val KEYWORD_RESET = "RESET"
+        const val KEYWORD_SETTINGS = "SETTINGS"
+        const val KEYWORD_EEPROM = "EEPROM"
+        const val KEYWORD_REBOOT = "REBOOT"
+        const val KEYWORD_SAVE = "SAVE"
+        const val KEYWORD_LOAD = "LOAD"
+        const val KEYWORD_DONE = "DONE"
+        const val KEYWORD_TRUE = "TRUE"
+        const val KEYWORD_FALSE = "FALSE"
+        const val KEYWORD_EMPTY = "EMPTY"
+        const val KEYWORD_ENDLINE = "ENDLINE"
+        const val KEYWORD_SCANNER_NOT_FOUND = "SCANNER_NOT_FOUND"
+        const val KEYWORD_INVALID_INPUT = "INVALID_INPUT"
+    }
+    
+    private var receivedLine: String = ""
     private var serialPort: SerialPort? = null
-    private var receivedData: MutableMap<String, String> = mutableMapOf("one" to "1", "two" to "2")
-    private var echoMessage: Pair<String, String> = "echo" to "ECHO"
+    private var receivedData: MutableMap<String, String> = mutableMapOf()
+    private var echoMessage: Pair<String, String> = LABEL_ECHO to "ECHO"
 
     val serialPortNames: Array<String> get() = SerialPortList.getPortNames()
     val serialPortName: String? get() = if (serialPort == null) null else serialPort!!.portName
 
     init {
-        if (autoConnect) scanPorts(responseDelay = 1500)
+        //addSerialPortListener()
+        if (autoConnect) scanPorts(responseDelay = 2000)
     }
 
     fun openPort(chosenPort: String): Boolean {
@@ -36,10 +67,14 @@ class SerialIO (
             serialPort!!.addEventListener { event ->
                 if (event.isRXCHAR) {
                     try {
-                        receivedData.putAll(parserJSON(serialPort!!.readString()!!.trim()))
-                        parser(receivedData).forEach { param -> receivedData.remove(param) }
-                    } finally {
-
+                        var receivedSubLine = serialPort!!.readString()
+                        if (receivedSubLine != null) receivedLine += receivedSubLine
+                    } finally { }
+                    if (receivedLine.contains(KEYWORD_ENDLINE)) {
+                        receivedLine = receivedLine.replace(KEYWORD_ENDLINE, "").substring(receivedLine.indexOf('{'), receivedLine.indexOf('}') + 1)
+                        receivedData.putAll(parserJSON(receivedLine))
+                        listener.dataReceived(receivedData as Map<String, String>)
+                        receivedLine = ""
                     }
                 }
             }
@@ -60,6 +95,8 @@ class SerialIO (
         }
     }
 
+    fun sendData(vararg data: Pair<String, String>) = sendData(mapOf(*data))
+
     fun getData(vararg params: String): Map<String, String> {
         val data = mutableMapOf<String, String>()
         if (params.isEmpty()) {
@@ -77,31 +114,50 @@ class SerialIO (
         return data
     }
 
+    fun removeData(vararg params: String) = params.forEach { receivedData.remove(it) }
+
     private fun parserJSON(line: String): Map<String, String> = Json.parseToJsonElement(line).jsonObject.toMap().mapValues { it.value.jsonPrimitive.content }
 
-    fun scanPorts(attempts: Int = 5, responseDelay: Long = 2000, startUpDelay: Long = responseDelay): String? {
-
+    fun scanPorts(attempts: Int = 5, responseDelay: Long = 2000, startUpDelay: Long = responseDelay) {
         closePort()
         var foundPort: String? = null
-        serialPortNames.forEach {
-            try {
-                openPort(it)
-                Thread.sleep(startUpDelay)
-                for (attempt in 1..attempts) {
-                    sendData(mapOf(echoMessage))
-                    Thread.sleep(responseDelay)
-                    val response = getData(echoMessage.first)
+        Thread {
+            println("Тред")
+            serialPortNames.forEach {
+                try {
+                    openPort(it)
+                    Thread.sleep(startUpDelay)
+                    for (attempt in 1..attempts) {
+                        sendData(mapOf(echoMessage))
+                        Thread.sleep(responseDelay)
+                        val response = getData(echoMessage.first, LABEL_STARTUP)
 
-                    if (response.isNotEmpty() && response[echoMessage.first] == echoMessage.second) {
-                        foundPort = it
-                        return@forEach
+                        if (response.isNotEmpty() && (response[echoMessage.first] == echoMessage.second || response[LABEL_STARTUP] == KEYWORD_DONE) ) {
+                            foundPort = it
+                            return@forEach
+                        }
                     }
+                } catch (e: SerialPortException) {
+                    println(e)
                 }
-            } catch (e: SerialPortException) {
-                println(e)
             }
+
+            if (foundPort != null) openPort(foundPort as String)
+            listener.portFound(serialPortName as String)
+        }.start()
+    }
+
+    interface SerialPortListener {
+        fun dataReceived(receivedData: Map<String, String>)
+        fun portFound(portName: String)
+    }
+
+    private lateinit var listener: SerialPortListener
+
+    fun addSerialPortListener(portFount: (String) -> Unit = {}, dataReceived: (Map<String, String>) -> Unit = {}) {
+        listener = object : SerialPortListener {
+            override fun dataReceived(receivedData: Map<String, String>) { dataReceived(receivedData) }
+            override fun portFound(portName: String) { portFount(portName) }
         }
-        if (foundPort != null) openPort(foundPort as String)
-        return serialPortName
     }
 }

@@ -64,9 +64,29 @@ class GUI {
 
     private var settings: MutableMap<String, Any> = mutableMapOf()
 
-
+    private val arduinoSerial: SerialIO = SerialIO(19200, autoConnect = true)
 
     init {
+        arduinoSerial.addSerialPortListener({
+            println(it)
+        }, {
+            it.forEach { t, u ->
+                println("$t $u")
+            }
+        })
+//        arduinoSerial.addDataReceivedListener {
+//            it.forEach { (t, u) ->
+//                println("$t $u")
+//                arduinoSerial.removeData(t)
+//            }
+//        }
+//
+//        arduinoSerial.addPortFoundListener {
+//            println(it)
+//        }
+
+
+
         setTimeDatePanel()
         basicSubTree.addChildren(
             Labels.SETTINGS to settingsBasicPanel,
@@ -109,8 +129,9 @@ class GUI {
                     menuButtonsInLine = newButtonsInLine
                     panelsForUpdate.addAll(arrayOf(Labels.BASIC, Labels.EXTENDED, Labels.ADMIN))
                 }
+
                 setPanel(rootTree, include = panelsForUpdate.toTypedArray())
-                updateFrame(forceUpdate = true)
+                //updateFrame(forceUpdate = true)
             }
         })
 
@@ -123,11 +144,11 @@ class GUI {
         updateFrame(forceUpdate = true)
     }
 
-    private fun serialParser(receivedData: MutableMap<String, String>): Array<String> {
+    private fun serialParser(receivedData: Map<String, String>): Array<String> {
         val processedLines = arrayListOf<String>()
         receivedData.forEach { (param, value) ->
             println("$param - $value")
-            receivedData.remove(param)
+            processedLines.add(param)
         }
         return processedLines.toTypedArray()
     }
@@ -181,7 +202,8 @@ class GUI {
         if(currentPanel.parent == currentPanel) {
             val powerButton = customButton(Labels[Labels.POWER_MENU].title, Palette.ACCENT_HIGH, Palette.FOREGROUND, Palette.BACKGROUND_ALT, icon = topPanelIcons[Labels.POWER_MENU], iconOnly = true)
             powerButton.addActionListener{
-                updateFrame(rootTree[Labels.POWER_MENU])
+                arduinoSerial.sendData(SerialIO.LABEL_ECHO to "123")
+                //updateFrame(rootTree[Labels.POWER_MENU])
             }
             addElement(powerButton, 1, topPanelButtonsSize)
         } else {
@@ -226,7 +248,7 @@ class GUI {
         timeDatePanel.add(date)
 
         Timer(1000) {
-            time.text = SimpleDateFormat("hh : mm").format(Date())
+            time.text = SimpleDateFormat("HH : mm").format(Date())
             date.text = SimpleDateFormat("EEEE, dd MMMM yyyy").format(Date())
         }.start()
 
@@ -258,12 +280,10 @@ class GUI {
             }
         }
 
-        if (exclude.isNotEmpty() && include.isNotEmpty()) return
-
-        runBlocking {
+        suspend fun recursiveSet(panel: TreeNode<JPanel>, exclude: Array<String> = arrayOf(), include: Array<String> = arrayOf()) {
             coroutineScope {
                 panel.value.isVisible = false
-                launch { panel.forEach { setPanel(it, exclude, include) } }
+                launch { panel.forEach { recursiveSet(it, exclude, include) } }
                 if (exclude.isNotEmpty()) {
                     launch { if (Labels.TITLE !in exclude) drawTitle() }
                     launch { if (panel.name !in exclude) drawContent() }
@@ -275,11 +295,17 @@ class GUI {
                     launch { drawTitle() }
                     launch { drawContent() }
                 }
-
+                panel.value.isVisible = true
             }
         }
-        panel.value.isVisible = true
+
+        if (exclude.isNotEmpty() && include.isNotEmpty()) return
+
+        runBlocking {
+            recursiveSet(panel, exclude, include)
+        }
         mainFrame.isVisible = true
+
     }
 
     private fun setWelcomePanel(panel: TreeNode<JPanel>) {

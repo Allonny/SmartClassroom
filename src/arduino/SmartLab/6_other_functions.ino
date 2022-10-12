@@ -27,8 +27,8 @@ void RFID_read (void) {
           uid_string[2 * i]     = (left_digit < 0xA ? '0' : ('A' - 0xA)) + left_digit;
           uid_string[2 * i + 1] = (right_digit < 0xA ? '0' : ('A' - 0xA)) + right_digit;
         }
-        setting_update(UID_LABEL, uid_string);
-        for_send(UID_LABEL, uid_string);
+        setting_update(LABEL_UID, uid_string);
+        for_send(LABEL_UID, uid_string);
       }
     } else {
       card_holding = false;
@@ -46,38 +46,38 @@ void system_request (String param_value) {
 }
 
 void reset_request (String param_value) {
-  if (param_value == KEYWORD_SETTINGS) { settings_reset(true); for_send(RESET_LABEL, KEYWORD_DONE); return; }
-  if (param_value == KEYWORD_EEPROM) { EEPROM_reset(); for_send(RESET_LABEL, KEYWORD_DONE); return; }
+  if (param_value == KEYWORD_SETTINGS) { settings_reset(true); for_send(LABEL_RESET, KEYWORD_DONE); return; }
+  if (param_value == KEYWORD_EEPROM) { EEPROM_reset(); for_send(LABEL_RESET, KEYWORD_DONE); return; }
   error_response(KEYWORD_INVALID_INPUT);
 }
 
 void echo_response (String param_value) {
-  for_send(ECHO_LABEL, param_value);
+  for_send(LABEL_ECHO, param_value);
 }
 
 void error_response (String param_value) {
   RFID_error = true;
-  for_send(ERROR_LABEL, param_value);
+  for_send(LABEL_ERROR, param_value);
 }
 
 void uid_request (String param_value) {
-  if (param_value == KEYWORD_GET) { for_send(UID_LABEL, setting_get(UID_LABEL)); return; }
-  if (param_value == KEYWORD_RESET) { setting_update(UID_LABEL, uid_default); return; }
+  if (param_value == KEYWORD_GET) { for_send(LABEL_UID, setting_get(LABEL_UID)); return; }
+  if (param_value == KEYWORD_RESET) { setting_update(LABEL_UID, uid_default); return; }
   error_response(KEYWORD_INVALID_INPUT);
 }
 
 void light_request (String param_value) {
-  numeric_param_setup(LIGHT_LABEL, param_value, light_default);
+  numeric_param_setup(LABEL_LIGHT, param_value, light_default);
 }
 
 void window_request (String param_value) {
-  numeric_param_setup(WINDOW_LABEL, param_value, window_default);
+  numeric_param_setup(LABEL_WINDOW, param_value, window_default);
 }
 
 void power_supply_request (String param_value) {
-  if (param_value == KEYWORD_GET) { for_send(POWER_SUPPLY_LABEL, setting_get(POWER_SUPPLY_LABEL)); return;}
-  if (param_value == KEYWORD_RESET) { setting_update(POWER_SUPPLY_LABEL, window_default); return; }
-  if (param_value == KEYWORD_TRUE || param_value == KEYWORD_FALSE) setting_update(POWER_SUPPLY_LABEL, param_value);
+  if (param_value == KEYWORD_GET) { for_send(LABEL_POWER_SUPPLY, setting_get(LABEL_POWER_SUPPLY)); return;}
+  if (param_value == KEYWORD_RESET) { setting_update(LABEL_POWER_SUPPLY, window_default); return; }
+  if (param_value == KEYWORD_TRUE || param_value == KEYWORD_FALSE) setting_update(LABEL_POWER_SUPPLY, param_value);
   else error_response(KEYWORD_INVALID_INPUT);
 }
 
