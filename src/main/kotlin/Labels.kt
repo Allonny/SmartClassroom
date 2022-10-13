@@ -18,6 +18,8 @@ class Labels {
         const val SERIAL_PORT = "serial_port"
         const val BACK = "back"
         const val MESSAGE = "message"
+        const val EXPAND = "expand"
+        const val COLLAPSE = "collapse"
         const val SET = "setting_in_list"
         const val PORT_CONNECT = SET + "_port_connect"
         const val SERIAL_LOG = SET + "_serial_log"

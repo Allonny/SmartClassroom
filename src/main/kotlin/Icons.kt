@@ -13,6 +13,10 @@ class Icons(size: Int, vararg iconsName: Pair<String, String>) {
             const val POWER_SUPPLY = """resources/images/png/foreground/power_supply.png"""
             const val SETTINGS = """resources/images/png/foreground/settings.png"""
             const val WINDOW = """resources/images/png/foreground/window.png"""
+            const val EXPAND = """resources/images/png/foreground/expand.png"""
+            const val COLLAPSE = """resources/images/png/foreground/collapse.png"""
+            const val SERIAL = """resources/images/png/foreground/serial.png"""
+            const val CONSOLE = """resources/images/png/foreground/terminal.png"""
         }
     }
 
@@ -27,7 +31,15 @@ class Icons(size: Int, vararg iconsName: Pair<String, String>) {
             const val POWER_SUPPLY = """resources/images/png/foreground_alt/power_supply.png"""
             const val SETTINGS = """resources/images/png/foreground_alt/settings.png"""
             const val WINDOW = """resources/images/png/foreground_alt/window.png"""
+            const val EXPAND = """resources/images/png/foreground_alt/expand.png"""
+            const val COLLAPSE = """resources/images/png/foreground_alt/collapse.png"""
+            const val SERIAL = """resources/images/png/foreground_alt/serial.png"""
+            const val CONSOLE = """resources/images/png/foreground_alt/terminal.png"""
         }
+    }
+
+    companion object {
+        const val LOGO = """resources/images/png/logo.png"""
     }
 
     private val icons: MutableMap<String, ImageIcon> = mutableMapOf<String, ImageIcon>().withDefault { ImageIcon() }

@@ -50,6 +50,7 @@ class SerialIO (
     private var echoMessage: Pair<String, String> = LABEL_ECHO to "ECHO"
 
     private val serialLog: ArrayList<Pair<String, String>> = arrayListOf()
+    fun getLog(): Array<Pair<String, String>> = serialLog.toTypedArray()
 
     var findingPort: Boolean = false
     val serialPortNames: Array<String> get() = SerialPortList.getPortNames()
