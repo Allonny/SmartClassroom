@@ -4,8 +4,11 @@ import kotlinx.coroutines.runBlocking
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.lang.Integer.max
 import java.lang.Integer.min
+import java.text.FieldPosition
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
@@ -30,9 +33,41 @@ class GUI {
 
     private val portConnectSetting: JPanel = JPanel()
     private val serialLogSetting: JPanel = JPanel()
-    private var serialLog: ArrayList<Pair<String, String>> = arrayListOf()
+    private var serialLog: ArrayList<Pair<String, String>> = arrayListOf(
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
+        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
+        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
+        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
+        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
+        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef"
+    )
 //    private val serialLogView: JPanel = JPanel()
-//    private val serialLogTextField: JTextField = JTextField()
+    private var serialLogTextField: JTextField = JTextField()
+    private var serialLogSendButton: JButton = JButton()
 
     private val menuBasicPanel: JPanel = JPanel(BorderLayout())
     private val menuExtendedPanel: JPanel = JPanel(BorderLayout())
@@ -381,9 +416,9 @@ class GUI {
         }
 
         fun drawContent(panel: TreeNode<JPanel>) {
-            //var scrollPosition = 0
+            var scrollPosition = 0
             try {
-                //panel.value.components.forEach { if (it.javaClass.name.contains("JScrollPane")) scrollPosition = (it as JScrollPane).verticalScrollBar.value }
+                panel.value.components.forEach { if (it.javaClass.name.contains("JScrollPane")) scrollPosition = (it as JScrollPane).verticalScrollBar.value }
                 val component = (panel.value.layout as BorderLayout).getLayoutComponent(BorderLayout.NORTH)
                 panel.value.removeAll()
                 if (component != null) panel.value.add(component, BorderLayout.NORTH)
@@ -391,7 +426,7 @@ class GUI {
                 when (panel.name) {
                     Labels.ROOT, Labels.WELCOME -> setWelcomePanel(panel)
                     Labels.BASIC, Labels.EXTENDED, Labels.ADMIN -> setMenuPanel(panel)
-                    Labels.SETTINGS -> setSettingsPanel(panel)
+                    Labels.SETTINGS -> setSettingsPanel(panel, scrollPosition)
                     Labels.LOGIN -> setLoginPanel(panel)
                 }
             }
@@ -526,7 +561,7 @@ class GUI {
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
 
-    private fun setSettingsPanel(panel: TreeNode<JPanel>) {
+    private fun setSettingsPanel(panel: TreeNode<JPanel>, scrollPosition: Int) {
         val settingsPanel = JPanel()
         val settingsScroll = JScrollPane(settingsPanel)
         val constraints = GridBagConstraints()
@@ -630,8 +665,7 @@ class GUI {
         settingsScroll.verticalScrollBar.unitIncrement = scrollSpeed
         layout.setConstraints(settingsScroll, constraints)
         panel.value.add(settingsScroll, BorderLayout.CENTER)
-
-
+        settingsScroll.verticalScrollBar.value = scrollPosition
     }
 
     private fun setPortConnectSetting(): JPanel {
@@ -690,88 +724,130 @@ class GUI {
 
         constraints.insets = settingsFieldInsets
 
-        val logPanel = JPanel()
-        val logScroll = JScrollPane(logPanel)
-
-        val logConstraints = GridBagConstraints()
-        logConstraints.fill = GridBagConstraints.VERTICAL
-        logScroll.border = BorderFactory.createMatteBorder(0, 0, 0, 0, Palette.BACKGROUND)
-        logScroll.background = Palette.BACKGROUND
-        logPanel.background = Palette.BACKGROUND
-
-        val layout = GridBagLayout()
-        logPanel.layout = layout
-
-        logConstraints.insets = settingTerminalRecordInsets
-        var counter = 0
-        serialLog.forEach {
-            if (it.second.trim().isEmpty()) return@forEach
-            val record = JPanel(BorderLayout())
-            record.minimumSize = Dimension(800, 100)
-            record.background = logPanel.background
-
-            val message = JPanel()
-            message.background = record.background
-            message.border = RoundedBorder(20, if (it.first == SerialIO.KEYWORD_INPUT) Palette.ACCENT_LOW else Palette.DISABLE)
-            val text = JTextArea(it.second)
-            text.background = Palette.TRANSPARENT
-            text.font = Fonts.MONO.deriveFont(12.5f)
-            text.lineWrap = true
-            text.wrapStyleWord = true
-            text.columns = 50
-            message.add(text)
-
-            record.add(message, if (it.first == SerialIO.KEYWORD_INPUT) BorderLayout.WEST else BorderLayout.EAST)
-
-            logConstraints.gridy = counter
-            logConstraints.weightx = 1.0
-            logConstraints.gridwidth = 1
-//            setSize(record, logConstraints, settingTerminalSize, changeableHeight = true)
-            logPanel.add(record, logConstraints)
-            counter++
-        }
-
-        logScroll.verticalScrollBar.unitIncrement = scrollSpeed
-        layout.setConstraints(logScroll, logConstraints)
-        //logScroll.maximumSize = settingTerminalSize
-        setSize(logScroll, constraints, null)
-
         constraints.gridx = 0
         constraints.gridy = 0
         constraints.gridwidth = 2
         constraints.weightx = 0.0
 
-        //panel.add(logScroll, constraints)
+        val terminalView = JPanel(BorderLayout())
+        terminalView.background = Palette.BACKGROUND_ALT
+        terminalView.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3, 2)
+
+        var logPanel = JPanel(BorderLayout())
+        logPanel.background = Palette.BACKGROUND
+
+        val logScroll = JScrollPane(logPanel)
+        logScroll.border = BorderFactory.createEmptyBorder()
+        logScroll.background = Palette.BACKGROUND
+
+        serialLog.forEach {
+            val linePanel = JPanel(GridBagLayout())
+            val lineConstraints = GridBagConstraints()
+            lineConstraints.fill = GridBagConstraints.HORIZONTAL
+
+            lineConstraints.insets = settingTerminalRecordInsets
+            lineConstraints.weightx = 0.0
+            lineConstraints.gridwidth = 1
+            lineConstraints.gridy = 0
+            val gridx = if (it.first == SerialIO.KEYWORD_INPUT) 0 else 1
+            lineConstraints.gridx = gridx
+            val color = if (it.first == SerialIO.KEYWORD_INPUT) Palette.ACCENT_LOW else Palette.DISABLE
+
+            val message = JPanel(BorderLayout())
+            message.background = logPanel.background
+            message.border = RoundedBorder(20, color)
+
+            val text = JTextArea(it.second)
+            text.background = color
+            text.foreground = Palette.FOREGROUND_ALT
+            text.border = BorderFactory.createEmptyBorder()
+            text.isEditable = false
+            text.lineWrap = true
+            text.columns = 40
+            text.font = Fonts.MONO.deriveFont(20f)
+
+            message.minimumSize = Dimension(400, 0)
+            message.maximumSize = Dimension(400, 1000)
+
+            setSize(message, lineConstraints, message.minimumSize, changeableHeight = true)
+            message.add(text, BorderLayout.CENTER)
+            linePanel.add(message, lineConstraints)
+
+            lineConstraints.weightx = 1.0
+            lineConstraints.gridx = 1 - gridx
+
+            val space = JLabel()
+            setSize(space, lineConstraints, null)
+            linePanel.add(space, lineConstraints)
+
+            val newLogPanel = JPanel(BorderLayout())
+            newLogPanel.background = Palette.BACKGROUND
+            newLogPanel.add(linePanel, BorderLayout.NORTH)
+            logPanel.add(newLogPanel, BorderLayout.SOUTH)
+            logPanel = newLogPanel
+        }
+
+        logScroll.verticalScrollBar.unitIncrement = scrollSpeed
+
+        terminalView.add(logScroll, BorderLayout.CENTER)
+        terminalView.minimumSize = Dimension(0, 0)
+        terminalView.maximumSize = terminalView.minimumSize
+        terminalView.size = terminalView.maximumSize
+        terminalView.preferredSize = terminalView.size
+
+        setSize(terminalView, constraints, settingTerminalSize, changeableWidth = true)
+        panel.add(terminalView, constraints)
 
         constraints.gridx = 0
         constraints.gridy = 1
         constraints.gridwidth = 1
         constraints.weightx = 1.0
-        val textField = JTextField()
 
-        setSize(textField, constraints, null)
-        panel.add(textField, constraints)
+        val backing = JPanel(BorderLayout())
+        backing.background = Palette.BACKGROUND_ALT
+        backing.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3, 2)
 
-        var sendButton = customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20)
-        //sendButton.isEnabled = false
+        serialLogTextField.background = Palette.BACKGROUND
+        serialLogTextField.foreground = Palette.FOREGROUND_ALT
+        serialLogTextField.border = BorderFactory.createEmptyBorder()
+        serialLogTextField.font = Fonts.MONO.deriveFont(20f)
 
-//        serialLogTextField.addActionListener {
-//            if (serialLogTextField.text.isNotEmpty()) {
-//                sendButton = customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20)
-//                sendButton.isEnabled = true
-//                sendButton.addActionListener {
-//                    serialLogTextField.text = ""
-//                }
-//            } else {
-//                sendButton = customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20)
-//                sendButton.isEnabled = false
-//            }
-//        }
+        backing.add(serialLogTextField, BorderLayout.CENTER)
+        setSize(backing, constraints, null)
+
+        panel.add(backing, constraints)
+
+        if (serialLogTextField.text.isNotEmpty()) {
+            customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+            serialLogSendButton.isEnabled = true
+        } else {
+            customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+            serialLogSendButton.isEnabled = false
+        }
+
+        serialLogTextField.addKeyListener(object : KeyAdapter() {
+            override fun keyReleased(e: KeyEvent?) {
+                if (serialLogTextField.text.isNotEmpty()) {
+                    customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                    serialLogSendButton.isEnabled = true
+                } else {
+                    customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                    serialLogSendButton.isEnabled = false
+                }
+                serialLogSendButton.isVisible = true
+                currentPanel.value.isVisible = true
+            }
+        })
+        serialLogTextField.addActionListener {
+
+            println(serialLogTextField.text)
+
+        }
+
 
         constraints.gridx = 1
-        setSize(sendButton, constraints, Dimension(250, settingButtonSize.height))
-        panel.add(sendButton, constraints)
-        //panel.preferredSize = settingTerminalSize
+        setSize(serialLogSendButton, constraints, Dimension(250, settingButtonSize.height))
+        panel.add(serialLogSendButton, constraints)
         return panel
     }
 
@@ -811,17 +887,17 @@ class GUI {
 
         var counter = 0
         panel.forEach {
-            if (it.name != Labels.SETTINGS) {
-                constraints.weightx = 0.0
-                constraints.gridwidth = 1
-                constraints.gridx = 1 + counter % menuButtonsInLine
-                constraints.gridy = counter / menuButtonsInLine
-                counter++
-                constraints.insets = menuButtonsInsets
-                val button = menuButton(it)
-                setSize(button, constraints, menuButtonsSize)
-                buttonPanel.add(button, constraints)
-            }
+            if (it.name == Labels.SETTINGS) return@forEach
+
+            constraints.weightx = 0.0
+            constraints.gridwidth = 1
+            constraints.gridx = 1 + counter % menuButtonsInLine
+            constraints.gridy = counter / menuButtonsInLine
+            counter++
+            constraints.insets = menuButtonsInsets
+            val button = menuButton(it)
+            setSize(button, constraints, menuButtonsSize)
+            buttonPanel.add(button, constraints)
         }
 
         for (i in 0..(currentPanel.count - 1) / 2) {
@@ -841,16 +917,16 @@ class GUI {
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
 
-    private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, backing: Color = Color.GRAY, borderRadius: Int = 50, labelSize: Int = 25, icon: ImageIcon? = null, iconOnly: Boolean = false): JButton {
-        val button = JButton()
-        button.isDoubleBuffered = true
-        button.background = backing
-        button.foreground = Palette.TRANSPARENT
-        button.border = RoundedBorder(borderRadius, background)
+    private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, backing: Color = Color.GRAY, borderRadius: Int = 50, labelSize: Int = 25, icon: ImageIcon? = null, iconOnly: Boolean = false, modifiedButton: JButton = JButton()): JButton {
+        modifiedButton.removeAll()
+//        modifiedButton.isDoubleBuffered = true
+        modifiedButton.background = backing
+        modifiedButton.foreground = Palette.TRANSPARENT
+        modifiedButton.border = RoundedBorder(borderRadius, background)
         val buttonPanel = JPanel()
         buttonPanel.layout = BorderLayout()
         buttonPanel.background = Palette.TRANSPARENT
-        button.add(buttonPanel)
+        modifiedButton.add(buttonPanel)
 
         fun getLabel(): JPanel {
             val text = JPanel()
@@ -875,13 +951,13 @@ class GUI {
             buttonPanel.add(getLabel(), BorderLayout.CENTER)
         } else if (iconOnly) {
             buttonPanel.add(getIcon(), BorderLayout.CENTER)
-            button.toolTipText = title
+            modifiedButton.toolTipText = title
         } else {
             buttonPanel.add(getLabel(), BorderLayout.CENTER)
             buttonPanel.add(getIcon(), BorderLayout.WEST)
         }
 
-        return button
+        return modifiedButton
     }
 
     private fun setSize(element: JComponent, constraints: GridBagConstraints, setSize: Dimension? = null, changeableWidth: Boolean = false, changeableHeight: Boolean = false) {
