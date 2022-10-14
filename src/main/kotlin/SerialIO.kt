@@ -9,6 +9,7 @@ class SerialIO (
     var serialDataBits: Int = 8,
     var serialStopBits: Int = 1,
     var serialPartly: Int = 0,
+    val logMaxLength: Int = 1000,
     val autoConnect: Boolean = false
         ) {
     companion object {
@@ -80,9 +81,9 @@ class SerialIO (
                         receivedLine.split(KEYWORD_ENDLINE).forEach {
                             try {
                                 //receivedLine = receivedLine.replace(KEYWORD_ENDLINE, "").substring(receivedLine.indexOf('{'), receivedLine.indexOf('}') + 1)
-                                receivedData.putAll(parserJSON(it))
+                                //receivedData.putAll(parserJSON(it))
                                 this.listener.dataReceived(receivedData as Map<String, String>)
-                                serialLog.add(KEYWORD_INPUT to it)
+                                appendLog(KEYWORD_INPUT to it)
                                 this.listener.updateLog(serialLog)
                             } catch (e: Exception) {
                                 println(e)
@@ -111,7 +112,7 @@ class SerialIO (
     fun sendData(data: Map<String, String>) {
         if (serialIsOpen() && data.isNotEmpty()) {
             val sendLine = buildJsonObject { data.forEach{ put(it.key, it.value) } }.toString()
-            serialLog.add(KEYWORD_OUTPUT to sendLine)
+            appendLog(KEYWORD_OUTPUT to sendLine)
             this.listener.updateLog(serialLog)
             serialPort!!.writeString(sendLine)
         }
@@ -170,6 +171,11 @@ class SerialIO (
             listener.portFound(foundPort)
             findingPort = false
         }.start()
+    }
+
+    private fun appendLog(newRecord: Pair<String, String>) {
+        serialLog.add(newRecord)
+        if (serialLog.count() > logMaxLength) serialLog.removeAt(0)
     }
 
     interface SerialPortListener {
