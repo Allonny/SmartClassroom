@@ -6,6 +6,7 @@ import java.lang.Integer.max
 import java.lang.Integer.min
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.Timer
 import javax.swing.text.html.ListView
@@ -59,7 +60,7 @@ class GUI {
     private val settingsFieldSize = Dimension(800, 100)
     private val settingsFieldInsets = Insets(10, 10, 10, 10)
     private val settingButtonSize = Dimension(50, 50)
-    private val settingExpandButtonInsets = Insets(10, 10, 10, 10)
+    private val scrollSpeed = 10
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 150
     private val maxTitleHeight = 100
@@ -75,6 +76,11 @@ class GUI {
         Labels.POWER_SUPPLY to Icons.Foreground.POWER_SUPPLY,
         Labels.ADD_USER to Icons.Foreground.ADD_USER)
     private val loginButtonIcon = Icons(min(loginButtonsSize.width, loginButtonsSize.height), Labels.LOGIN to Icons.ForegroundAlt.LOGIN)
+    private val settingsIcons = Icons(settingButtonSize.width,
+        Labels.EXPAND to Icons.Foreground.EXPAND,
+        Labels.COLLAPSE to Icons.Foreground.COLLAPSE,
+        Labels.PORT_CONNECT to Icons.ForegroundAlt.SERIAL,
+        Labels.SERIAL_LOG to Icons.ForegroundAlt.CONSOLE)
 
     private val expandedSettings: MutableMap<String, Boolean> = mutableMapOf(
         Labels.SERIAL_LOG to false,
@@ -153,7 +159,6 @@ class GUI {
                 }
 
                 setPanel(rootTree, include = panelsForUpdate.toTypedArray())
-                //updateFrame(forceUpdate = true)
             }
         })
 
@@ -161,6 +166,7 @@ class GUI {
         mainFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         mainFrame.size = Dimension(1280, 720)
         mainFrame.setLocationRelativeTo(null)
+        mainFrame.iconImage = ImageIcon(Icons.LOGO).image
 
         setPanel(rootTree)
         updateFrame(forceUpdate = true)
@@ -187,7 +193,7 @@ class GUI {
         }
 
         arduinoSerial.addPortFoundListener {
-            setPanel(rootTree, include = arrayOf(Labels.SETTINGS))
+            //setPanel(rootTree, include = arrayOf(Labels.SETTINGS))
             println("Найден $it")
         }
 
@@ -206,6 +212,9 @@ class GUI {
     private fun updateFrame(newCurrentPanel: TreeNode<JPanel> = currentPanel, forceUpdate: Boolean = true) {
         mainFrame.contentPane.isVisible = false
         if (newCurrentPanel != currentPanel || forceUpdate) {
+//            var flag = false
+//            expandedSettings.keys.forEach { flag = flag || expandedSettings.getValue(it); expandedSettings[it] = false }
+//            if (flag) setPanel(rootTree, include = arrayOf(Labels.SETTINGS))
             currentPanel = newCurrentPanel
             mainFrame.contentPane.removeAll()
             setTopPanel()
@@ -323,9 +332,9 @@ class GUI {
 
         suspend fun recursiveSet(panel: TreeNode<JPanel>, exclude: Array<String> = arrayOf(), include: Array<String> = arrayOf()) {
             if (panel.name.contains(Labels.SET)) return
+            panel.value.isVisible = false
             coroutineScope {
-                panel.value.isVisible = false
-                launch { panel.forEach { recursiveSet(it, exclude, include) } }
+                if (panel.name != Labels.LOGIN) launch { panel.forEach { recursiveSet(it, exclude, include) } }
                 if (exclude.isNotEmpty()) {
                     launch { if (Labels.TITLE !in exclude) drawTitle(panel) }
                     launch { if (panel.name !in exclude) drawContent(panel) }
@@ -337,8 +346,8 @@ class GUI {
                     launch { drawTitle(panel) }
                     launch { drawContent(panel) }
                 }
-                panel.value.isVisible = true
             }
+            panel.value.isVisible = true
         }
 
         if (exclude.isNotEmpty() && include.isNotEmpty()) return
@@ -427,6 +436,7 @@ class GUI {
             buttonPanel.add(button, constraints)
         }
 
+        buttonScroll.verticalScrollBar.unitIncrement = scrollSpeed
         layout.setConstraints(buttonScroll, constraints)
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
@@ -443,7 +453,7 @@ class GUI {
         val layout = GridBagLayout()
         settingsPanel.layout = layout
 
-        var counter = 1
+        var counter = 0
         panel.forEach {
             constraints.gridy = counter
             constraints.weightx = 1.0
@@ -471,20 +481,35 @@ class GUI {
 
             fieldConstraints.gridx = 0
             fieldConstraints.insets = settingsFieldInsets
+            val fieldIcon = JLabel(settingsIcons[it.name])
+            setSize(fieldIcon, fieldConstraints, settingButtonSize)
+            field.add(fieldIcon, fieldConstraints)
+
+            fieldConstraints.gridx = 1
             val title = JLabel(Labels[it.name].title)
             title.foreground = Palette.FOREGROUND
             title.font = Fonts.REGULAR_ALT
-            title.font = title.font.deriveFont(20f)
+            title.font = title.font.deriveFont(25f)
             setSize(title, fieldConstraints, null)
             field.add(title, fieldConstraints)
 
             val expanded = expandedSettings.getValue(it.name)
-            var expandButton = customButton(if (expanded) "-" else "+", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT)
+            val text: String
+            val icon: ImageIcon
+            if (expanded) {
+                text = "Раскрыть"
+                icon = settingsIcons[Labels.COLLAPSE]!!
+            } else {
+                text = "Скрыть"
+                icon = settingsIcons[Labels.EXPAND]!!
+            }
+
+            var expandButton = customButton(text, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, icon = icon, iconOnly = true)
             expandButton.addActionListener { _ ->
                 expandedSettings[it.name] = !(expandedSettings.getValue(it.name))
                 setPanel(currentPanel, include = arrayOf(Labels.SETTINGS))
             }
-            fieldConstraints.gridx = 1
+            fieldConstraints.gridx = 2
             setSize(expandButton, fieldConstraints, settingButtonSize)
             field.add(expandButton, fieldConstraints)
 
@@ -492,7 +517,7 @@ class GUI {
                 fieldConstraints.gridx = 0
                 fieldConstraints.gridy = 1
                 fieldConstraints.weightx = 1.0
-                fieldConstraints.gridwidth = 2
+                fieldConstraints.gridwidth = 3
 
                 val content = when (it.name) {
                     Labels.PORT_CONNECT -> setPortConnectSetting()
@@ -503,11 +528,13 @@ class GUI {
             }
 
             setSize(field, constraints, settingsFieldSize, changeableHeight = true)
+            constraints.weightx = 0.5
             settingsPanel.add(field, constraints)
 
             counter++
         }
 
+        settingsScroll.verticalScrollBar.unitIncrement = scrollSpeed
         layout.setConstraints(settingsScroll, constraints)
         panel.value.add(settingsScroll, BorderLayout.CENTER)
     }
@@ -617,6 +644,7 @@ class GUI {
             }
         }
 
+        buttonScroll.verticalScrollBar.unitIncrement = scrollSpeed
         layout.setConstraints(buttonScroll, constraints)
         panel.value.add(buttonScroll, BorderLayout.CENTER)
     }
