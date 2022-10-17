@@ -1,3 +1,4 @@
+import jdk.jfr.Enabled
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -66,7 +67,7 @@ class GUI {
         SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef"
     )
 //    private val serialLogView: JPanel = JPanel()
-    private var serialLogTextField: JTextField = JTextField()
+    private var serialLogTextField: JTextField = JTextField("", 1)
     private var serialLogSendButton: JButton = JButton()
 
     private val menuBasicPanel: JPanel = JPanel(BorderLayout())
@@ -731,7 +732,7 @@ class GUI {
 
         val terminalView = JPanel(BorderLayout())
         terminalView.background = Palette.BACKGROUND_ALT
-        terminalView.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3, 2)
+        terminalView.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3)
 
         var logPanel = JPanel(BorderLayout())
         logPanel.background = Palette.BACKGROUND
@@ -742,6 +743,7 @@ class GUI {
 
         serialLog.forEach {
             val linePanel = JPanel(GridBagLayout())
+            linePanel.background = Palette.BACKGROUND
             val lineConstraints = GridBagConstraints()
             lineConstraints.fill = GridBagConstraints.HORIZONTAL
 
@@ -788,6 +790,7 @@ class GUI {
         }
 
         logScroll.verticalScrollBar.unitIncrement = scrollSpeed
+        logScroll.verticalScrollBar.value = logScroll.verticalScrollBar.maximum
 
         terminalView.add(logScroll, BorderLayout.CENTER)
         terminalView.minimumSize = Dimension(0, 0)
@@ -805,7 +808,7 @@ class GUI {
 
         val backing = JPanel(BorderLayout())
         backing.background = Palette.BACKGROUND_ALT
-        backing.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3, 2)
+        backing.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3)
 
         serialLogTextField.background = Palette.BACKGROUND
         serialLogTextField.foreground = Palette.FOREGROUND_ALT
@@ -817,32 +820,35 @@ class GUI {
 
         panel.add(backing, constraints)
 
-        if (serialLogTextField.text.isNotEmpty()) {
-            customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-            serialLogSendButton.isEnabled = true
-        } else {
-            customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-            serialLogSendButton.isEnabled = false
+        fun sendData() {
+            if (serialLogTextField.text.isEmpty()) return
+            serialLog.add(SerialIO.KEYWORD_OUTPUT to serialLogTextField.text)
+            serialLogTextField.text = ""
+            setPanel(currentPanel)
         }
+
+        fun setButton(enabled: Boolean) {
+            if (enabled) {
+                customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                serialLogSendButton.isEnabled = true
+            } else {
+                customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                serialLogSendButton.isEnabled = false
+            }
+            serialLogSendButton.addActionListener {
+                sendData()
+            }
+//            setPanel(currentPanel)
+        }
+
+        setButton(serialLogTextField.text.isNotEmpty())
 
         serialLogTextField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent?) {
-                if (serialLogTextField.text.isNotEmpty()) {
-                    customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-                    serialLogSendButton.isEnabled = true
-                } else {
-                    customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-                    serialLogSendButton.isEnabled = false
-                }
-                serialLogSendButton.isVisible = true
-                currentPanel.value.isVisible = true
+                if (e!!.keyCode == KeyEvent.VK_ENTER) sendData()
+                setButton(serialLogTextField.text.isNotEmpty())
             }
         })
-        serialLogTextField.addActionListener {
-
-            println(serialLogTextField.text)
-
-        }
 
 
         constraints.gridx = 1
@@ -920,13 +926,20 @@ class GUI {
     private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, backing: Color = Color.GRAY, borderRadius: Int = 50, labelSize: Int = 25, icon: ImageIcon? = null, iconOnly: Boolean = false, modifiedButton: JButton = JButton()): JButton {
         modifiedButton.removeAll()
 //        modifiedButton.isDoubleBuffered = true
+        modifiedButton.layout = BorderLayout()
         modifiedButton.background = backing
-        modifiedButton.foreground = Palette.TRANSPARENT
+        modifiedButton.foreground = backing
         modifiedButton.border = RoundedBorder(borderRadius, background)
         val buttonPanel = JPanel()
+//        if (modifiedButton.componentCount > 0) modifiedButton.components.forEach { modifiedButton.remove(it) }
+//        val buttonPanel = if (modifiedButton.componentCount > 0) modifiedButton.getComponent(0) as JPanel
+//        else JPanel()
+//        if (buttonPanel.componentCount > 0) buttonPanel.components.forEach { if (it.javaClass.name.contains("JPanel")) buttonPanel.remove(it) }
+        buttonPanel.removeAll()
+        println(buttonPanel.componentCount)
         buttonPanel.layout = BorderLayout()
-        buttonPanel.background = Palette.TRANSPARENT
-        modifiedButton.add(buttonPanel)
+        buttonPanel.background = background
+        modifiedButton.add(buttonPanel, BorderLayout.CENTER)
 
         fun getLabel(): JPanel {
             val text = JPanel()
@@ -957,6 +970,7 @@ class GUI {
             buttonPanel.add(getIcon(), BorderLayout.WEST)
         }
 
+        modifiedButton.isVisible = true
         return modifiedButton
     }
 

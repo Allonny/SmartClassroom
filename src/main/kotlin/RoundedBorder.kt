@@ -13,7 +13,7 @@ class RoundedBorder (
     private val borderThickness: Int = 0,
     private val insetsDivider: Int = 5
 ) : Border {
-    override fun getBorderInsets(c: Component?): Insets = Insets(radius / insetsDivider, radius / insetsDivider, radius / insetsDivider, radius / insetsDivider)
+    override fun getBorderInsets(c: Component?): Insets = Insets(radius / insetsDivider + borderThickness, radius / insetsDivider + borderThickness, radius / insetsDivider + borderThickness, radius / insetsDivider + borderThickness)
 
     override fun isBorderOpaque(): Boolean = true
 
