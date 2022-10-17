@@ -21,6 +21,8 @@ class TreeNode<T> (val name: String, val value: T) {
 
     operator fun plusAssign(node: TreeNode<T>) = addChild(node)
 
+    operator fun plusAssign(pair: Pair<String, T>) = addChild(pair)
+
     operator fun plusAssign(nodes: Map<String, T>) = nodes.forEach{ addChild(it.toPair()) }
 
     operator fun contains(node: TreeNode<T>): Boolean = node in nodes.values

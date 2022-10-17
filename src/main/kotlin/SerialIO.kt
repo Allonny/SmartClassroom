@@ -78,15 +78,14 @@ class SerialIO (
                         if (receivedSubLine != null) receivedLine += receivedSubLine
                     } finally { }
                     if (receivedLine.contains(KEYWORD_ENDLINE)) {
-                        receivedLine.split(KEYWORD_ENDLINE).forEach {
+                        receivedLine.trim().split(KEYWORD_ENDLINE).forEach {
+                            if (it.isEmpty()) return@forEach
                             try {
-                                //receivedLine = receivedLine.replace(KEYWORD_ENDLINE, "").substring(receivedLine.indexOf('{'), receivedLine.indexOf('}') + 1)
-                                //receivedData.putAll(parserJSON(it))
+                                receivedData.putAll(parserJSON(it))
                                 this.listener.dataReceived(receivedData as Map<String, String>)
                                 appendLog(KEYWORD_INPUT to it)
-                                this.listener.updateLog(serialLog)
                             } catch (e: Exception) {
-                                println(e)
+                                println(e.toString() + "\'$it\'")
                             }
                         }
                         receivedLine = ""
@@ -113,12 +112,19 @@ class SerialIO (
         if (serialIsOpen() && data.isNotEmpty()) {
             val sendLine = buildJsonObject { data.forEach{ put(it.key, it.value) } }.toString()
             appendLog(KEYWORD_OUTPUT to sendLine)
-            this.listener.updateLog(serialLog)
             serialPort!!.writeString(sendLine)
         }
     }
 
     fun sendData(vararg data: Pair<String, String>) = sendData(mapOf(*data))
+
+    fun sendData(data: String) {
+        try {
+            sendData(parserJSON(data))
+        } catch (e: Exception) {
+            appendLog(KEYWORD_OUTPUT to "Некорректный синтаксис!")
+        }
+    }
 
     fun getData(vararg params: String): Map<String, String> {
         val data = mutableMapOf<String, String>()
@@ -152,7 +158,7 @@ class SerialIO (
                     Thread.sleep(startUpDelay)
                     for (attempt in 1..attempts) {
                         val response = getData(echoMessage.first, LABEL_STARTUP)
-                        if (response.isNotEmpty() && (response[echoMessage.first] == echoMessage.second || response[LABEL_STARTUP] == KEYWORD_DONE) ) {
+                        if (response.isNotEmpty() && (response[echoMessage.first] == echoMessage.second) ) {
                             removeData(echoMessage.first, LABEL_STARTUP)
                             foundPort = it
                             return@forEach
@@ -176,6 +182,7 @@ class SerialIO (
     private fun appendLog(newRecord: Pair<String, String>) {
         serialLog.add(newRecord)
         if (serialLog.count() > logMaxLength) serialLog.removeAt(0)
+        this.listener.updateLog(serialLog)
     }
 
     interface SerialPortListener {
