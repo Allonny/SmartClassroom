@@ -851,15 +851,25 @@ class GUI {
             Labels.ADD_USER -> icon = menuButtonIcons[Labels.ADD_USER]
         }
 
-        val button = customButton(
-            Labels[panel.name].title,
-            Palette.ACCENT_NORMAL,
-            Palette.FOREGROUND,
-            Palette.BACKGROUND,
-            50,
-            30,
-            icon
-        )
+
+        val  button = MaterialButton(Labels[panel.name].title, icon)
+        button.cornerRadius = 50
+        button.font = Fonts.REGULAR.deriveFont(30f)
+        button.backingColor = Palette.BACKGROUND
+        button.backgroundColor = Palette.ACCENT_NORMAL
+        button.foregroundColor = Palette.FOREGROUND
+        button.iconPosition = MaterialButton.ICON_LEFT
+
+
+//        val button = customButton(
+//            Labels[panel.name].title,
+//            Palette.ACCENT_NORMAL,
+//            Palette.FOREGROUND,
+//            Palette.BACKGROUND,
+//            50,
+//            30,
+//            icon
+//        )
         button.addActionListener { updateFrame(panel) }
         return button
     }
