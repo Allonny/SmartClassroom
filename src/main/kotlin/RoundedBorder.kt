@@ -9,7 +9,7 @@ import java.awt.RenderingHints
 class RoundedBorder (
     private val radius: Int,
     private val background: Color,
-    private  val border: Color = background,
+    private val border: Color = background,
     private val borderThickness: Int = 0,
     private val insetsDivider: Int = 5
 ) : Border {

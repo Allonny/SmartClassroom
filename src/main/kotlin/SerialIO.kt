@@ -33,6 +33,7 @@ class SerialIO (
         const val KEYWORD_REBOOT = "REBOOT"
         const val KEYWORD_SAVE = "SAVE"
         const val KEYWORD_LOAD = "LOAD"
+        const val KEYWORD_ECHO = "ECHO"
         const val KEYWORD_DONE = "DONE"
         const val KEYWORD_TRUE = "TRUE"
         const val KEYWORD_FALSE = "FALSE"
@@ -48,7 +49,6 @@ class SerialIO (
     private var serialPort: SerialPort? = null
     private var receivedLine: String = ""
     private var receivedData: MutableMap<String, String> = mutableMapOf()
-    private var echoMessage: Pair<String, String> = LABEL_ECHO to "ECHO"
 
     private val serialLog: ArrayList<Pair<String, String>> = arrayListOf()
     fun getLog(): Array<Pair<String, String>> = serialLog.toTypedArray()
@@ -157,13 +157,13 @@ class SerialIO (
                     openPort(it)
                     Thread.sleep(startUpDelay)
                     for (attempt in 1..attempts) {
-                        val response = getData(echoMessage.first, LABEL_STARTUP)
-                        if (response.isNotEmpty() && (response[echoMessage.first] == echoMessage.second) ) {
-                            removeData(echoMessage.first, LABEL_STARTUP)
+                        val response = getData(LABEL_ECHO, LABEL_STARTUP)
+                        if (response.isNotEmpty() && (response[LABEL_ECHO] == KEYWORD_ECHO || response[LABEL_STARTUP] == KEYWORD_DONE) ) {
+                            removeData(LABEL_ECHO, LABEL_STARTUP)
                             foundPort = it
                             return@forEach
                         }
-                        sendData(mapOf(echoMessage))
+                        sendData(LABEL_ECHO to KEYWORD_ECHO)
                         Thread.sleep(responseDelay)
                     }
                     closePort()
@@ -174,8 +174,8 @@ class SerialIO (
             }
 
 //            if (foundPort != null) openPort(foundPort as String)
-            listener.portFound(foundPort)
             findingPort = false
+            listener.portFound(foundPort)
         }.start()
     }
 

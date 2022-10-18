@@ -27,6 +27,18 @@ class Labels {
         const val SETTING_LABEL = SET + "_label"
         const val SETTING_BUTTON = SET + "_button"
         const val SETTING_TEXTFIELD = SET + "_textfield"
+        const val RECONNECT = "reconnect"
+        const val SEND = "send"
+        const val SEARCH = "search"
+        const val FOUND = "found"
+        const val NOT_FOUND = "not_found"
+        const val SWITCH = "switch"
+        const val SWITCH_OFF = SWITCH + "_off"
+        const val SWITCH_ON = SWITCH + "_on"
+        const val COUNT = "_count"
+        const val GROUP = "_group"
+        const val LIGHT_GROUP = LIGHT + GROUP
+        const val WINDOW_GROUP = WINDOW + GROUP
 
         private val fields : Map<String, TextField> = mapOf(
             NAME to TextField("SmartLab"),
@@ -47,7 +59,11 @@ class Labels {
             BACK to TextField("Назад"),
             MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "свою карточку", 4 to "к сканнеру (=^ω^=)")),
             PORT_CONNECT to TextField("Порт подключения Arduino:", other = mapOf(SETTING_BUTTON to "Найти устройство")),
-            SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду"))
+            SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду")),
+            RECONNECT to TextField("Переподключить", other = mapOf(SEARCH to "Происходит поиск устройств", NOT_FOUND to "Устройство не подключено!", FOUND to "Устройство подключекно к порту: ")),
+            SEND to TextField("Отправить"),
+            SWITCH to TextField(other = mapOf(SWITCH_ON to "Включить", SWITCH_OFF to "выключить")),
+            GROUP to TextField("Группа №")
         ).withDefault { TextField() }
 
         operator fun get (key: String): TextField = fields.getValue(key)

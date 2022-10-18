@@ -2,10 +2,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.*
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
+import java.awt.event.*
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.text.SimpleDateFormat
@@ -32,38 +29,6 @@ class GUI {
 
     private val portConnectSetting: JPanel = JPanel(BorderLayout())
     private val serialLogSetting: JPanel = JPanel(BorderLayout())
-    private var serialLog: ArrayList<Pair<String, String>> = arrayListOf(
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef",
-        SerialIO.KEYWORD_INPUT to "123123123123123123123123123123123123123123",
-        SerialIO.KEYWORD_INPUT to "456456456456456456456456456456456456456456456456456456456456456456456",
-        SerialIO.KEYWORD_OUTPUT to "abcabcabcabcabcabc",
-        SerialIO.KEYWORD_INPUT to "789789789789789789789789789",
-        SerialIO.KEYWORD_OUTPUT to "defdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdefdef"
-    )
 
     private val menuBasicPanel: JPanel = JPanel(BorderLayout())
     private val menuExtendedPanel: JPanel = JPanel(BorderLayout())
@@ -93,6 +58,9 @@ class GUI {
     private val loginButtonsInsets = Insets(10, 10, 10, 10)
     private val menuButtonsSize = Dimension(400, 125)
     private val menuButtonsInsets = Insets(10, 10, 10, 10)
+    private val menuFieldSize = Dimension(400, 400)
+    private val menuSwitchButtonSize = Dimension(150, 150)
+    private val menuSwitchButtonInsets = Insets(10, 10, 10, 10)
     private val settingsFieldSize = Dimension(800, 100)
     private val settingsFieldInsets = Insets(10, 10, 10, 10)
     private val settingButtonSize = Dimension(50, 50)
@@ -112,7 +80,7 @@ class GUI {
     )
     private val menuButtonIcons = Icons(
         min(menuButtonsSize.width, menuButtonsSize.height),
-        Labels.LIGHT to Icons.Foreground.LIGHT_OFF,
+        Labels.LIGHT to Icons.Foreground.LIGHT_ON,
         Labels.WINDOW to Icons.Foreground.WINDOW,
         Labels.POWER_SUPPLY to Icons.Foreground.POWER_SUPPLY,
         Labels.ADD_USER to Icons.Foreground.ADD_USER
@@ -126,17 +94,32 @@ class GUI {
         Labels.PORT_CONNECT to Icons.ForegroundAlt.SERIAL,
         Labels.SERIAL_LOG to Icons.ForegroundAlt.CONSOLE
     )
+    private val menuLightIcons = Icons(
+        menuSwitchButtonSize.width,
+        Labels.SWITCH_ON to Icons.Foreground.LIGHT_ON,
+        Labels.SWITCH_OFF to Icons.Foreground.LIGHT_OFF
+    )
     private val expandedSettings: MutableMap<String, Boolean> = mutableMapOf(
         Labels.SERIAL_LOG to false,
         Labels.PORT_CONNECT to false
     ).withDefault { false }
 
-    private var settings: MutableMap<String, Any> = mutableMapOf()
+    private var settings: MutableMap<String, Any> = mutableMapOf(
+        Labels.LIGHT_GROUP + Labels.COUNT to 4
+    )
     private val arduinoSerial: SerialIO = SerialIO(19200, autoConnect = true)
+    private var serialLog: ArrayList<Pair<String, String>> = arrayListOf()
 
     init {
         setArduino()
         setTimeDatePanel()
+
+        if (settings.contains(Labels.LIGHT_GROUP + Labels.COUNT)) {
+            for (i in 1 .. settings[Labels.LIGHT_GROUP + Labels.COUNT] as Int) {
+                settings[Labels.LIGHT_GROUP + "_$i"] = 0
+            }
+        }
+        println(settings)
 
         rootTree.addChildren(
             Labels.POWER_MENU to powerMenuPanel,
@@ -236,8 +219,6 @@ class GUI {
         }
 
         arduinoSerial.addPortFoundListener {
-//            setSettingField(currentSubTree[Labels])
-//            setPortConnectSetting(currentSubTree[Labels.SETTINGS][Labels.PORT_CONNECT][Labels.CONTENT])
             if (currentPanel.name == Labels.SETTINGS) setPanel(currentPanel[Labels.PORT_CONNECT], force = true)
             println("Найден $it")
         }
@@ -246,8 +227,6 @@ class GUI {
             serialLog.clear()
             serialLog.addAll(log)
             if (currentPanel.name == Labels.SETTINGS) setPanel(currentPanel[Labels.SERIAL_LOG], force = true)
-//            if (currentPanel.name == Labels.SETTINGS) setSettingField(currentPanel[Labels.PORT_CONNECT])
-            //setPanel(currentSubTree, include = arrayOf(Labels.SETTINGS))
         }
     }
 
@@ -412,14 +391,11 @@ class GUI {
                 Labels.BASIC, Labels.EXTENDED, Labels.ADMIN -> setMenuPanel(panel, scrollPosition)
                 Labels.SETTINGS -> setSettingsPanel(panel, scrollPosition)
                 Labels.PORT_CONNECT, Labels.SERIAL_LOG -> setSettingField(panel)
+                Labels.LIGHT -> setLightPanel(panel)
             }
         }
 
-        suspend fun recursiveSet(
-            panel: TreeNode<JPanel>,
-            exclude: Array<String> = arrayOf(),
-            include: Array<String> = arrayOf()
-        ) {
+        suspend fun recursiveSet(panel: TreeNode<JPanel>, exclude: Array<String> = arrayOf(), include: Array<String> = arrayOf()) {
             coroutineScope {
                 if (panel.name != Labels.LOGIN) panel.forEach { recursiveSet(it, exclude, include) }
                 if (exclude.isNotEmpty()) {
@@ -572,9 +548,6 @@ class GUI {
             constraints.insets = settingsFieldInsets
 
             setSettingField(it)
-//            setPanel(currentSubTree, include = arrayOf(it.name), force = true)
-
-
             setSize(it.value, constraints, settingsFieldSize, changeableHeight = true)
             settingsPanel.add(it.value, constraints)
 
@@ -582,21 +555,22 @@ class GUI {
         }
 
         layout.setConstraints(settingsScroll, constraints)
-        panel.value.add(settingsScroll, BorderLayout.CENTER)
         settingsScroll.verticalScrollBar.unitIncrement = scrollSpeed
         settingsScroll.verticalScrollBar.value = scrollPosition
+        panel.value.add(settingsScroll, BorderLayout.CENTER)
     }
 
     private fun setSettingField(panel: TreeNode<JPanel>) {
+        panel.value.removeAll()
         val fieldPanel = JPanel(GridBagLayout())
         fieldPanel.background = Palette.BACKGROUND
         fieldPanel.border = RoundedBorder(50, Palette.BACKGROUND_ALT)
 
         val constraints = GridBagConstraints()
         constraints.fill = GridBagConstraints.BOTH
+        constraints.insets = settingsFieldInsets
 
         constraints.gridx = 0
-        constraints.insets = settingsFieldInsets
         val fieldIcon = JLabel(settingsIcons[panel.name])
         setSize(fieldIcon, constraints, settingButtonSize)
         fieldPanel.add(fieldIcon, constraints)
@@ -620,7 +594,7 @@ class GUI {
             icon = settingsIcons[Labels.EXPAND]!!
         }
 
-        var expandButton = customButton(
+        val expandButton = customButton(
             text,
             Palette.ACCENT_NORMAL,
             Palette.FOREGROUND,
@@ -628,7 +602,7 @@ class GUI {
             icon = icon,
             iconOnly = true
         )
-        expandButton.addActionListener { _ ->
+        expandButton.addActionListener {
             expandedSettings[panel.name] = !(expandedSettings.getValue(panel.name))
             setPanel(currentSubTree, include = arrayOf(panel.name), force = true)
         }
@@ -662,35 +636,37 @@ class GUI {
 
         val constraints = GridBagConstraints()
         constraints.fill = GridBagConstraints.HORIZONTAL
-
-        constraints.gridx = 0
         constraints.insets = settingsFieldInsets
 
         val title = JLabel()
         val status = arduinoSerial.serialPortName
-        val buttonColor: Color
-        var textColor: Color = Palette.FOREGROUND
-        if (status == null) {
-            if (arduinoSerial.findingPort) {
-                title.text = "Происходит поиск устройств"
-                buttonColor = Palette.DISABLE
-            } else {
-                title.text = "Устройство не подключено!"
-                buttonColor = Palette.ACCENT_HIGH
-                textColor = Palette.FOREGROUND_ALT
-            }
-        } else {
-            title.text = "Устройство подключекно к порту: $status"
-            buttonColor = Palette.ACCENT_NORMAL
-        }
-
         title.foreground = Palette.FOREGROUND
         title.font = Fonts.REGULAR_ALT
         title.font = title.font.deriveFont(20f)
+        title.preferredSize = Dimension(0, settingButtonSize.height)
+
+        val buttonColor: Color
+        var buttonTextColor: Color = Palette.FOREGROUND
+
+        if (arduinoSerial.findingPort) {
+            title.text = Labels[Labels.RECONNECT].other[Labels.SEARCH] as String
+            buttonColor = Palette.DISABLE
+        } else {
+            if (status == null) {
+                title.text = Labels[Labels.RECONNECT].other[Labels.NOT_FOUND] as String
+                buttonColor = Palette.ACCENT_HIGH
+                buttonTextColor = Palette.FOREGROUND_ALT
+            } else {
+                title.text = Labels[Labels.RECONNECT].other[Labels.FOUND] as String + status
+                buttonColor = Palette.ACCENT_NORMAL
+            }
+        }
+
+        constraints.gridx = 0
         setSize(title, constraints, null)
         contentPanel.add(title, constraints)
 
-        val reconnectButton = customButton("Переподключить", buttonColor, textColor, Palette.BACKGROUND_ALT, labelSize = 20)
+        val reconnectButton = customButton(Labels[Labels.RECONNECT].title, buttonColor, buttonTextColor, Palette.BACKGROUND_ALT, labelSize = 20)
         reconnectButton.isEnabled = !arduinoSerial.findingPort
         if (reconnectButton.isEnabled) {
             reconnectButton.addActionListener {
@@ -698,9 +674,11 @@ class GUI {
                 setSettingField(panel.parent)
             }
         }
+
         constraints.gridx = 1
         setSize(reconnectButton, constraints, Dimension(250, settingButtonSize.height))
         contentPanel.add(reconnectButton, constraints)
+
         panel.value.add(contentPanel, BorderLayout.CENTER)
     }
 
@@ -740,7 +718,7 @@ class GUI {
                 message.background = logPanel.background
                 message.border = RoundedBorder(20, color)
 
-                val text = JTextArea(it.second)
+                val text = JTextArea(it.second.replace(",", ",\n"))
                 text.background = color
                 text.foreground = Palette.FOREGROUND_ALT
                 text.border = BorderFactory.createEmptyBorder()
@@ -749,8 +727,11 @@ class GUI {
                 text.columns = 40
                 text.font = Fonts.MONO.deriveFont(20f)
 
-                message.minimumSize = Dimension(400, 0)
-                message.maximumSize = Dimension(400, 1000)
+                text.addMouseListener(object : MouseAdapter() {
+                    override fun mouseReleased(e: MouseEvent?) {
+                        serialLogTextField.text = text.text.replace("\n", "")
+                    }
+                })
 
                 setSize(message, lineConstraints, message.minimumSize, changeableHeight = true)
                 message.add(text, BorderLayout.CENTER)
@@ -784,10 +765,10 @@ class GUI {
 
         fun setButton(enabled: Boolean) {
             if (enabled) {
-                customButton("Отправить", Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                customButton(Labels[Labels.SEND].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
                 serialLogSendButton.isEnabled = true
             } else {
-                customButton("Отправить", Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
+                customButton(Labels[Labels.SEND].title, Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
                 serialLogSendButton.isEnabled = false
             }
             serialLogSendButton.addActionListener {
@@ -929,6 +910,117 @@ class GUI {
         buttonScroll.verticalScrollBar.value = scrollPosition
     }
 
+    private fun setLightPanel(panel: TreeNode<JPanel>, scrollPosition: Int = 0) {
+        val buttonPanel = JPanel()
+        val buttonScroll = JScrollPane(buttonPanel)
+        val constraints = GridBagConstraints()
+        constraints.fill = GridBagConstraints.BOTH
+        buttonScroll.border = BorderFactory.createMatteBorder(0, 0, 0, 0, Palette.BACKGROUND)
+        buttonScroll.background = Palette.BACKGROUND
+        buttonPanel.background = Palette.BACKGROUND
+
+        val layout = GridBagLayout()
+        buttonPanel.layout = layout
+
+        val buttonsCount = if (settings.contains(Labels.LIGHT_GROUP + Labels.COUNT)) settings[Labels.LIGHT_GROUP + Labels.COUNT] as Int else 0
+
+        for (counter in 0 until buttonsCount) {
+            constraints.insets = menuButtonsInsets
+            constraints.weightx = 0.0
+            constraints.gridwidth = 1
+            constraints.gridx = 1 + counter % menuButtonsInLine
+            constraints.gridy = counter / menuButtonsInLine
+
+            val groupPanel = JPanel(GridBagLayout())
+            groupPanel.background = Palette.BACKGROUND
+            groupPanel.border = RoundedBorder(50, Palette.BACKGROUND_ALT)
+
+            val groupConstraints = GridBagConstraints()
+            groupConstraints.fill = GridBagConstraints.VERTICAL
+            groupConstraints.insets = menuSwitchButtonInsets
+
+            val title = adaptiveWidthLabel(Labels[Labels.GROUP].title + (counter + 1).toString(),
+            Fonts.REGULAR_ALT, menuFieldSize.width - 100, menuFieldSize.height - 100)
+            title.foreground = Palette.FOREGROUND_ALT
+
+            val switchButton: JButton = JButton()
+
+            val value = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int
+            val lightSlider = JSlider(DefaultBoundedRangeModel(value, 0, 0, 100))
+            lightSlider.majorTickSpacing = 20
+            lightSlider.minorTickSpacing = 10
+            lightSlider.paintTicks = true
+            lightSlider.snapToTicks = true
+            lightSlider.background = Palette.BACKGROUND_ALT
+
+            fun setButton() {
+                val state = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int != 0
+                if (state) {
+                    customButton(
+                        Labels[Labels.SWITCH].other[Labels.SWITCH_OFF] as String,
+                        Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT,
+                        150,
+                        icon = menuLightIcons[Labels.SWITCH_ON], iconOnly = true,
+                        modifiedButton = switchButton)
+                } else {
+                    customButton(
+                        Labels[Labels.SWITCH].other[Labels.SWITCH_ON] as String,
+                        Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT,
+                        150,
+                        icon = menuLightIcons[Labels.SWITCH_OFF], iconOnly = true,
+                        modifiedButton = switchButton)
+                }
+
+                switchButton.addActionListener {
+                    lightSlider.value = if (state) 0 else 50
+                    setPanel(currentSubTree, include = arrayOf(Labels.LIGHT), force = true)
+                }
+            }
+
+            lightSlider.addChangeListener {
+                val oldValue = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int == 0
+                val newValue =  lightSlider.value == 0
+
+                settings[Labels.LIGHT_GROUP + "_${counter + 1}"] = lightSlider.value
+                if (oldValue != newValue) setPanel(currentSubTree, include = arrayOf(Labels.LIGHT), force = true)
+            }
+
+            setButton()
+
+            groupConstraints.gridy = 0
+            setSize(title, groupConstraints, null)
+            groupPanel.add(title, groupConstraints)
+
+            groupConstraints.gridy = 1
+            setSize(switchButton, groupConstraints, menuSwitchButtonSize)
+            groupPanel.add(switchButton, groupConstraints)
+
+            groupConstraints.gridy = 2
+            setSize(lightSlider, groupConstraints, null)
+            groupPanel.add(lightSlider, groupConstraints)
+
+            setSize(groupPanel, constraints, menuFieldSize)
+            buttonPanel.add(groupPanel, constraints)
+        }
+
+        for (i in 0..(currentPanel.count - 1) / 2) {
+            constraints.gridy = i
+            constraints.weightx = 1.0
+            constraints.gridwidth = 1
+            for (j in arrayOf(0, menuButtonsInLine + 1)) {
+                val space = JLabel()
+                setSize(space, constraints, null)
+                constraints.gridx = j
+                buttonPanel.add(space, constraints)
+            }
+        }
+
+        layout.setConstraints(buttonScroll, constraints)
+        panel.value.add(buttonScroll, BorderLayout.CENTER)
+        buttonScroll.verticalScrollBar.unitIncrement = scrollSpeed
+        buttonScroll.verticalScrollBar.value = scrollPosition
+    }
+
     private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, backing: Color = Color.GRAY, borderRadius: Int = 50, labelSize: Int = 25, icon: ImageIcon? = null, iconOnly: Boolean = false, modifiedButton: JButton = JButton()): JButton {
         modifiedButton.isVisible = false
         modifiedButton.removeAll()
@@ -975,6 +1067,10 @@ class GUI {
         return modifiedButton
     }
 
+    private fun customSlider() {
+
+    }
+
     private fun setSize(element: JComponent, constraints: GridBagConstraints, setSize: Dimension? = null, changeableWidth: Boolean = false, changeableHeight: Boolean = false) {
         if (setSize != null) {
             if (!changeableWidth) constraints.ipadx = setSize.width - element.minimumSize.width
@@ -988,8 +1084,7 @@ class GUI {
     }
 
     private fun setTitle(text: String): JPanel {
-        val title =
-            adaptiveWidthLabel(text.uppercase(), Fonts.TITLE, mainFrame.width - menuMinFieldWidth, maxTitleHeight)
+        val title = adaptiveWidthLabel(text.uppercase(), Fonts.TITLE, mainFrame.width - menuMinFieldWidth, maxTitleHeight)
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(title)
