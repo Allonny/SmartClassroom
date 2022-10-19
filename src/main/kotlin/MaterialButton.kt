@@ -9,13 +9,13 @@ class MaterialButton : JButton {
         const val ICON_RIGHT = BorderLayout.EAST
         const val ICON_TOP = BorderLayout.NORTH
         const val ICON_BOTTOM = BorderLayout.SOUTH
-        val ICON_ORIGINAL_SIZE = Dimension(-1, -1)
+        val ICON_ORIGINAL_SIZE = Dimension(100, 100)
     }
     private val positions: Set<String> = setOf(ICON_CENTER, ICON_LEFT, ICON_RIGHT, ICON_TOP, ICON_BOTTOM)
 
     private val facePanel: JPanel = JPanel(BorderLayout())
 
-    private var faceText: Array<JLabel> = arrayOf()
+    private var faceText: JPanel = JPanel(GridLayout(0, 1))
 
     private var currentBackground: Color = Color.GRAY
     private var currentForeground: Color = Color.BLACK
@@ -34,13 +34,11 @@ class MaterialButton : JButton {
     var enableFaceIcon: ImageIcon? = null
         set(value) {
             field = value
-            iconSize = iconSize
             setFace()
         }
     var disableFaceIcon: ImageIcon? = null
         set(value) {
             field = value
-            iconSize = iconSize
             setFace()
         }
 
@@ -98,17 +96,19 @@ class MaterialButton : JButton {
         setFace()
     }
 
-    var iconOnly: Boolean = false
+    var iconOnly: Boolean = true
         set(value) {
             field = value
-            if (field) iconPosition = ICON_CENTER
+            if (field && iconPosition != ICON_CENTER) iconPosition = ICON_CENTER
+            if (!field && iconPosition == ICON_CENTER) iconPosition = ICON_LEFT
             setFace()
         }
 
     var iconPosition: String = ICON_CENTER
         set(value) {
             field = if (value !in positions) ICON_CENTER else value
-            iconOnly = field == ICON_CENTER
+            if (!iconOnly && field == ICON_CENTER) iconOnly = true
+            if (iconOnly && field != ICON_CENTER) iconOnly = false
             setFace()
         }
 
@@ -120,45 +120,50 @@ class MaterialButton : JButton {
             setFace()
         }
 
-
-//
-//    override fun getFont(): Font = faceText.font
-
-//    override fun setFont(font: Font?) {
-//        faceText.font = font
-//        setFace()
-//    }
-
+    override fun setFont(font: Font?) {
+        super.setFont(font)
+        if (facePanel != null) setFace()
+    }
 
     private fun setFace() {
         val currentTitle = if (this.isEnabled) enableFaceTitle else disableFaceTitle
         val currentIcon = if (this.isEnabled) enableFaceIcon else disableFaceIcon
 
+        this.isVisible = false
         facePanel.removeAll()
         this.toolTipText = currentTitle
-        if (enableFaceIcon == null || !iconOnly) {
-            setFaceText(currentTitle)
-            val faceTextBox = Box(BoxLayout.PAGE_AXIS)
-            faceText.forEach { faceTextBox.add(it) }
-            facePanel.add(faceTextBox, BorderLayout.CENTER)
-        }
+        setFaceText(currentTitle)
+        if (enableFaceIcon == null || !iconOnly) facePanel.add(faceText, BorderLayout.CENTER)
         if (currentIcon != null) facePanel.add(JLabel(currentIcon), iconPosition)
+        this.isVisible = true
     }
 
     private fun setDecor() {
+        this.isVisible = false
         this.background = backingColor
         this.foreground = backingColor
         currentBackground = if (this.isEnabled) backgroundColor else disableBackgroundColor
         currentForeground = if (this.isEnabled) foregroundColor else disableForegroundColor
         border = RoundedBorder(cornerRadius, currentBackground, borderColor, borderThickness)
         facePanel.background = currentBackground
-        faceText.forEach { it.background = currentBackground; it.foreground = currentForeground }
+        faceText.background = currentBackground
+        faceText.foreground = currentForeground
+        this.isVisible = true
     }
 
     private fun setFaceText(text: String?) {
-        faceText = text?.split("\n")?.map { JLabel(it) }?.toTypedArray() ?: arrayOf()
-        faceText.forEach { it.font = this.font; it.background = currentBackground; it.foreground = currentForeground }
+        faceText.removeAll()
+        text?.split("\n")?.forEach {
+            val line = JLabel(it)
+            line.background = faceText.background
+            line.foreground = faceText.foreground
+            line.horizontalAlignment = JLabel.CENTER
+            line.font = this.font
+            faceText.add(line)
+        }
     }
+
+    constructor() {}
 
     constructor(title: String?) {
         this.enableFaceTitle = title
@@ -178,7 +183,6 @@ class MaterialButton : JButton {
     }
 
     init {
-//        this.font = Fonts.REGULAR.deriveFont(30f)
         this.add(facePanel)
         setDecor()
         setFace()

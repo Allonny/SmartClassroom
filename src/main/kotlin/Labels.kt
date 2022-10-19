@@ -58,6 +58,8 @@ class Labels {
             ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
             BACK to TextField("Назад"),
             MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "свою карточку", 4 to "к сканнеру (=^ω^=)")),
+            EXPAND to TextField("Раскрыть"),
+            COLLAPSE to TextField("Скрыть"),
             PORT_CONNECT to TextField("Порт подключения Arduino:", other = mapOf(SETTING_BUTTON to "Найти устройство")),
             SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду")),
             RECONNECT to TextField("Переподключить", other = mapOf(SEARCH to "Происходит поиск устройств", NOT_FOUND to "Устройство не подключено!", FOUND to "Устройство подключекно к порту: ")),

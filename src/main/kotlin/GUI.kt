@@ -66,6 +66,7 @@ class GUI {
     private val settingButtonSize = Dimension(50, 50)
     private val settingTerminalSize = Dimension(800, 500)
     private val settingTerminalRecordInsets = Insets(10, 10, 10, 10)
+    private val buttonCornerRadius = 50
     private val scrollSpeed = 10
     private var menuButtonsInLine = 2
     private val menuMinFieldWidth = 150
@@ -286,53 +287,39 @@ class GUI {
         constraints.insets = topPanelButtonsInsets
 
         if (currentPanel.parent == currentPanel) {
-            val powerButton = customButton(
-                Labels[Labels.POWER_MENU].title,
-                Palette.ACCENT_HIGH,
-                Palette.FOREGROUND,
-                Palette.BACKGROUND_ALT,
-                icon = topPanelIcons[Labels.POWER_MENU],
-                iconOnly = true
-            )
+            val powerButton = MaterialButton(Labels[Labels.POWER_MENU].title, topPanelIcons[Labels.POWER_MENU])
+            powerButton.cornerRadius = buttonCornerRadius
+            powerButton.backingColor = Palette.BACKGROUND_ALT
+            powerButton.backgroundColor = Palette.ACCENT_HIGH
+            powerButton.foregroundColor = Palette.FOREGROUND
+
             powerButton.addActionListener { updateFrame(rootTree[Labels.POWER_MENU]) }
             addElement(powerButton, 1, topPanelButtonsSize)
         } else {
-            val backButton = customButton(
-                Labels[Labels.BACK].title,
-                Palette.ACCENT_NORMAL,
-                Palette.FOREGROUND,
-                Palette.BACKGROUND_ALT,
-                icon = topPanelIcons[Labels.BACK],
-                iconOnly = true
-            )
+            val backButton = MaterialButton(Labels[Labels.BACK].title, topPanelIcons[Labels.BACK])
+            backButton.cornerRadius = buttonCornerRadius
+            backButton.backingColor = Palette.BACKGROUND_ALT
+            backButton.backgroundColor = Palette.ACCENT_HIGH
+            backButton.foregroundColor = Palette.FOREGROUND
+
             backButton.addActionListener { updateFrame(currentPanel.parent) }
             addElement(backButton, 1, topPanelButtonsSize)
         }
 
         addElement(timeDatePanel, 1)
 
-        val settingsButton: JButton
-        if ("settings" in currentPanel.names) {
-            settingsButton = customButton(
-                "Настройки",
-                Palette.ACCENT_NORMAL,
-                Palette.FOREGROUND,
-                Palette.BACKGROUND_ALT,
-                icon = topPanelIcons[Labels.SETTINGS],
-                iconOnly = true
-            )
-            settingsButton.addActionListener { updateFrame(currentPanel[Labels.SETTINGS]) }
-        } else {
-            settingsButton = customButton(
-                "Настройки",
-                Palette.DISABLE,
-                Palette.FOREGROUND_ALT,
-                Palette.BACKGROUND_ALT,
-                icon = topPanelIcons[Labels.SETTINGS + "_alt"],
-                iconOnly = true
-            )
-            settingsButton.isEnabled = false
-        }
+        val settingsButton = MaterialButton(Labels[Labels.SETTINGS].title, topPanelIcons[Labels.SETTINGS])
+        settingsButton.cornerRadius = buttonCornerRadius
+        settingsButton.disableFaceIcon = topPanelIcons[Labels.SETTINGS + "_alt"]
+        settingsButton.backingColor = Palette.BACKGROUND_ALT
+        settingsButton.backgroundColor = Palette.ACCENT_NORMAL
+        settingsButton.disableBackgroundColor = Palette.DISABLE
+        settingsButton.foregroundColor = Palette.FOREGROUND
+        settingsButton.disableForegroundColor = Palette.FOREGROUND_ALT
+
+        settingsButton.isEnabled = Labels.SETTINGS in currentPanel.names
+        settingsButton.addActionListener { updateFrame(currentPanel[Labels.SETTINGS]) }
+
         addElement(settingsButton, 1, topPanelButtonsSize)
 
         topPanel.isVisible = true
@@ -447,15 +434,14 @@ class GUI {
             buttonPanel.add(space, constraints)
         }
 
-        val loginButton = customButton(
-            Labels[Labels.LOGIN].title,
-            Palette.ACCENT_LOW,
-            Palette.FOREGROUND_ALT,
-            Palette.BACKGROUND,
-            25,
-            20,
-            loginButtonIcon[Labels.LOGIN]
-        )
+        val loginButton = MaterialButton(Labels[Labels.LOGIN].title, loginButtonIcon[Labels.LOGIN])
+        loginButton.cornerRadius = buttonCornerRadius
+        loginButton.backingColor = Palette.BACKGROUND
+        loginButton.backgroundColor = Palette.ACCENT_LOW
+        loginButton.foregroundColor = Palette.FOREGROUND_ALT
+        loginButton.font = Fonts.REGULAR.deriveFont(20f)
+        loginButton.iconPosition = MaterialButton.ICON_LEFT
+
         loginButton.addActionListener { updateFrame(rootTree[Labels.LOGIN]) }
 
         constraints.ipadx = loginButtonsSize.width - loginButton.minimumSize.width
@@ -500,14 +486,14 @@ class GUI {
             constraints.gridy = counter
             counter++
             constraints.insets = loginButtonsInsets
-            val button = customButton(
-                Labels[it.name].title,
-                Palette.ACCENT_NORMAL,
-                Palette.FOREGROUND,
-                Palette.BACKGROUND,
-                25,
-                20
-            )
+
+            val button = MaterialButton(Labels[it.name].title)
+            button.cornerRadius = buttonCornerRadius
+            button.backingColor = Palette.BACKGROUND
+            button.backgroundColor = Palette.ACCENT_NORMAL
+            button.foregroundColor = Palette.FOREGROUND
+            button.font = Fonts.REGULAR.deriveFont(20f)
+
             button.addActionListener { _ -> updateFrame(it) }
             setSize(button, constraints, loginButtonsSize)
             buttonPanel.add(button, constraints)
@@ -584,24 +570,15 @@ class GUI {
         fieldPanel.add(title, constraints)
 
         val expanded = expandedSettings.getValue(panel.name)
-        val text: String
-        val icon: ImageIcon
-        if (expanded) {
-            text = "Раскрыть"
-            icon = settingsIcons[Labels.COLLAPSE]!!
-        } else {
-            text = "Скрыть"
-            icon = settingsIcons[Labels.EXPAND]!!
-        }
 
-        val expandButton = customButton(
-            text,
-            Palette.ACCENT_NORMAL,
-            Palette.FOREGROUND,
-            Palette.BACKGROUND_ALT,
-            icon = icon,
-            iconOnly = true
-        )
+        val expandButton = MaterialButton()
+        expandButton.cornerRadius = buttonCornerRadius
+        expandButton.enableFaceTitle = if (expanded) Labels[Labels.COLLAPSE].title else Labels[Labels.EXPAND].title
+        expandButton.enableFaceIcon = if (expanded) settingsIcons[Labels.COLLAPSE]!! else settingsIcons[Labels.EXPAND]!!
+        expandButton.backingColor = Palette.BACKGROUND_ALT
+        expandButton.backgroundColor = Palette.ACCENT_NORMAL
+        expandButton.foregroundColor = Palette.FOREGROUND
+
         expandButton.addActionListener {
             expandedSettings[panel.name] = !(expandedSettings.getValue(panel.name))
             setPanel(currentSubTree, include = arrayOf(panel.name), force = true)
@@ -645,34 +622,35 @@ class GUI {
         title.font = title.font.deriveFont(20f)
         title.preferredSize = Dimension(0, settingButtonSize.height)
 
-        val buttonColor: Color
-        var buttonTextColor: Color = Palette.FOREGROUND
-
-        if (arduinoSerial.findingPort) {
-            title.text = Labels[Labels.RECONNECT].other[Labels.SEARCH] as String
-            buttonColor = Palette.DISABLE
-        } else {
-            if (status == null) {
-                title.text = Labels[Labels.RECONNECT].other[Labels.NOT_FOUND] as String
-                buttonColor = Palette.ACCENT_HIGH
-                buttonTextColor = Palette.FOREGROUND_ALT
-            } else {
-                title.text = Labels[Labels.RECONNECT].other[Labels.FOUND] as String + status
-                buttonColor = Palette.ACCENT_NORMAL
-            }
-        }
-
         constraints.gridx = 0
         setSize(title, constraints, null)
         contentPanel.add(title, constraints)
 
-        val reconnectButton = customButton(Labels[Labels.RECONNECT].title, buttonColor, buttonTextColor, Palette.BACKGROUND_ALT, labelSize = 20)
-        reconnectButton.isEnabled = !arduinoSerial.findingPort
-        if (reconnectButton.isEnabled) {
-            reconnectButton.addActionListener {
-                arduinoSerial.scanPorts()
-                setSettingField(panel.parent)
+        val reconnectButton = MaterialButton(Labels[Labels.RECONNECT].title)
+        reconnectButton.cornerRadius = buttonCornerRadius
+        reconnectButton.backingColor = contentPanel.background
+        reconnectButton.foregroundColor = Palette.FOREGROUND
+        reconnectButton.disableBackgroundColor = Palette.DISABLE
+        reconnectButton.disableForegroundColor = Palette.FOREGROUND_ALT
+
+        if (arduinoSerial.findingPort) {
+            title.text = Labels[Labels.RECONNECT].other[Labels.SEARCH] as String
+            reconnectButton.isEnabled = false
+        } else {
+            if (status == null) {
+                title.text = Labels[Labels.RECONNECT].other[Labels.NOT_FOUND] as String
+                reconnectButton.backgroundColor = Palette.ACCENT_HIGH
+            } else {
+                title.text = Labels[Labels.RECONNECT].other[Labels.FOUND] as String + status
+                reconnectButton.backgroundColor = Palette.ACCENT_NORMAL
             }
+        }
+
+        reconnectButton.font = Fonts.REGULAR.deriveFont(20f)
+
+        reconnectButton.addActionListener {
+            arduinoSerial.scanPorts()
+            setSettingField(panel.parent)
         }
 
         constraints.gridx = 1
@@ -686,7 +664,7 @@ class GUI {
         val terminalView = JPanel()
         var logScroll = JScrollPane()
         val serialLogTextField = JTextField("", 1)
-        val serialLogSendButton = JButton()
+        val serialLogSendButton = MaterialButton(Labels[Labels.SEND].title)
 
         fun setLogPanel()  {
             logScroll.isVisible = false
@@ -763,19 +741,6 @@ class GUI {
             serialLogTextField.text = ""
         }
 
-        fun setButton(enabled: Boolean) {
-            if (enabled) {
-                customButton(Labels[Labels.SEND].title, Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-                serialLogSendButton.isEnabled = true
-            } else {
-                customButton(Labels[Labels.SEND].title, Palette.DISABLE, Palette.FOREGROUND_ALT, Palette.BACKGROUND_ALT, labelSize = 20, modifiedButton = serialLogSendButton)
-                serialLogSendButton.isEnabled = false
-            }
-            serialLogSendButton.addActionListener {
-                sendData()
-            }
-        }
-
         panel.parent.value.isVisible = false
         panel.value.isVisible = false
         val contentPanel = JPanel(GridBagLayout())
@@ -820,19 +785,30 @@ class GUI {
         serialLogTextField.border = BorderFactory.createEmptyBorder()
         serialLogTextField.font = Fonts.MONO.deriveFont(20f)
 
-        backing.add(serialLogTextField, BorderLayout.CENTER)
-        setSize(backing, constraints, null)
-
-        contentPanel.add(backing, constraints)
-
-        setButton(serialLogTextField.text.isNotEmpty())
-
         serialLogTextField.addKeyListener(object : KeyAdapter() {
             override fun keyReleased(e: KeyEvent?) {
                 if (e!!.keyCode == KeyEvent.VK_ENTER) sendData()
-                setButton(serialLogTextField.text.isNotEmpty())
+                serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
             }
         })
+
+        backing.add(serialLogTextField, BorderLayout.CENTER)
+        setSize(backing, constraints, null)
+        contentPanel.add(backing, constraints)
+
+        serialLogSendButton.cornerRadius = buttonCornerRadius
+        serialLogSendButton.backingColor = Palette.BACKGROUND_ALT
+        serialLogSendButton.backgroundColor = Palette.ACCENT_NORMAL
+        serialLogSendButton.disableBackgroundColor = Palette.DISABLE
+        serialLogSendButton.foregroundColor = Palette.FOREGROUND
+        serialLogSendButton.disableForegroundColor = Palette.FOREGROUND_ALT
+        serialLogSendButton.font = Fonts.REGULAR.deriveFont(20f)
+
+        serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
+        serialLogSendButton.addActionListener {
+            sendData()
+            serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
+        }
 
         constraints.gridx = 1
         setSize(serialLogSendButton, constraints, Dimension(250, settingButtonSize.height))
@@ -851,25 +827,14 @@ class GUI {
             Labels.ADD_USER -> icon = menuButtonIcons[Labels.ADD_USER]
         }
 
-
         val  button = MaterialButton(Labels[panel.name].title, icon)
-        button.cornerRadius = 50
-        button.font = Fonts.REGULAR.deriveFont(30f)
+        button.cornerRadius = buttonCornerRadius
         button.backingColor = Palette.BACKGROUND
         button.backgroundColor = Palette.ACCENT_NORMAL
         button.foregroundColor = Palette.FOREGROUND
         button.iconPosition = MaterialButton.ICON_LEFT
+        button.font = Fonts.REGULAR.deriveFont(30f)
 
-
-//        val button = customButton(
-//            Labels[panel.name].title,
-//            Palette.ACCENT_NORMAL,
-//            Palette.FOREGROUND,
-//            Palette.BACKGROUND,
-//            50,
-//            30,
-//            icon
-//        )
         button.addActionListener { updateFrame(panel) }
         return button
     }
@@ -953,32 +918,31 @@ class GUI {
             Fonts.REGULAR_ALT, menuFieldSize.width - 100, menuFieldSize.height - 100)
             title.foreground = Palette.FOREGROUND_ALT
 
-            val switchButton: JButton = JButton()
-
             val value = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int
             val lightSlider = JSlider(DefaultBoundedRangeModel(value, 0, 0, 100))
+            lightSlider.setUI(MaterialSliaderUI(lightSlider))
+            lightSlider.preferredSize = Dimension(300, 50)
             lightSlider.majorTickSpacing = 20
             lightSlider.minorTickSpacing = 10
-            lightSlider.paintTicks = true
+//            lightSlider.paintTicks = true
             lightSlider.snapToTicks = true
             lightSlider.background = Palette.BACKGROUND_ALT
 
+            val switchButton = MaterialButton()
+
             fun setButton() {
                 val state = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int != 0
+                switchButton.cornerRadius = 150
+                switchButton.backingColor = Palette.BACKGROUND_ALT
+                switchButton.backgroundColor = Palette.ACCENT_NORMAL
+                switchButton.foregroundColor = Palette.FOREGROUND
+
                 if (state) {
-                    customButton(
-                        Labels[Labels.SWITCH].other[Labels.SWITCH_OFF] as String,
-                        Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT,
-                        150,
-                        icon = menuLightIcons[Labels.SWITCH_ON], iconOnly = true,
-                        modifiedButton = switchButton)
+                    switchButton.enableFaceTitle = Labels[Labels.SWITCH].other[Labels.SWITCH_OFF] as String
+                    switchButton.enableFaceIcon = menuLightIcons[Labels.SWITCH_ON]
                 } else {
-                    customButton(
-                        Labels[Labels.SWITCH].other[Labels.SWITCH_ON] as String,
-                        Palette.ACCENT_NORMAL, Palette.FOREGROUND, Palette.BACKGROUND_ALT,
-                        150,
-                        icon = menuLightIcons[Labels.SWITCH_OFF], iconOnly = true,
-                        modifiedButton = switchButton)
+                    switchButton.enableFaceTitle = Labels[Labels.SWITCH].other[Labels.SWITCH_ON] as String
+                    switchButton.enableFaceIcon = menuLightIcons[Labels.SWITCH_OFF]
                 }
 
                 switchButton.addActionListener {
@@ -1029,56 +993,6 @@ class GUI {
         panel.value.add(buttonScroll, BorderLayout.CENTER)
         buttonScroll.verticalScrollBar.unitIncrement = scrollSpeed
         buttonScroll.verticalScrollBar.value = scrollPosition
-    }
-
-    private fun customButton(title: String, background: Color = Color.WHITE, foreground: Color = Color.BLACK, backing: Color = Color.GRAY, borderRadius: Int = 50, labelSize: Int = 25, icon: ImageIcon? = null, iconOnly: Boolean = false, modifiedButton: JButton = JButton()): JButton {
-        modifiedButton.isVisible = false
-        modifiedButton.removeAll()
-        modifiedButton.layout = BorderLayout()
-        modifiedButton.background = backing
-        modifiedButton.foreground = backing
-        modifiedButton.border = RoundedBorder(borderRadius, background)
-
-        val buttonPanel = JPanel()
-        buttonPanel.layout = BorderLayout()
-        buttonPanel.background = background
-        modifiedButton.add(buttonPanel, BorderLayout.CENTER)
-
-        fun getLabel(): JPanel {
-            val text = JPanel()
-            text.layout = GridLayout(0, 1)
-            text.background = background
-            title.split("\n").forEach {
-                val line = JLabel(it)
-                line.background = background
-                line.foreground = foreground
-                line.horizontalAlignment = JLabel.CENTER
-                line.font = Fonts.REGULAR.deriveFont(labelSize.toFloat())
-                text.add(line)
-            }
-            return text
-        }
-
-        fun getIcon(): JLabel {
-            return JLabel(icon)
-        }
-
-        if (icon == null) {
-            buttonPanel.add(getLabel(), BorderLayout.CENTER)
-        } else if (iconOnly) {
-            buttonPanel.add(getIcon(), BorderLayout.CENTER)
-            modifiedButton.toolTipText = title
-        } else {
-            buttonPanel.add(getLabel(), BorderLayout.CENTER)
-            buttonPanel.add(getIcon(), BorderLayout.WEST)
-        }
-
-        modifiedButton.isVisible = true
-        return modifiedButton
-    }
-
-    private fun customSlider() {
-
     }
 
     private fun setSize(element: JComponent, constraints: GridBagConstraints, setSize: Dimension? = null, changeableWidth: Boolean = false, changeableHeight: Boolean = false) {
