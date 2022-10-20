@@ -1,3 +1,5 @@
+package auxiliary
+
 import java.awt.Image
 import javax.swing.ImageIcon
 
@@ -43,6 +45,7 @@ class Icons(size: Int, vararg iconsName: Pair<String, String>) {
     }
 
     private val icons: MutableMap<String, ImageIcon> = mutableMapOf<String, ImageIcon>().withDefault { ImageIcon() }
+
     init {
         iconsName.forEach {
             try { icons[it.first] = ImageIcon(ImageIcon(it.second).image.getScaledInstance(size / 2, size / 2, Image.SCALE_SMOOTH)) } finally { }

@@ -1,4 +1,6 @@
-class TreeNode<T> (val name: String, val value: T) {
+package auxiliary
+
+class TreeNode<T>(val name: String, val value: T) {
     var parent: TreeNode<T> = this
     private val nodes: MutableMap<String, TreeNode<T>> = mutableMapOf<String, TreeNode<T>>().withDefault { parent }
 
@@ -47,8 +49,7 @@ class TreeNode<T> (val name: String, val value: T) {
 
     override fun toString(): String {
         var output = name
-        if (count != 0)
-        {
+        if (count != 0) {
             output += " -> "
             val temp = arrayListOf<String>()
             forEach { temp.add(it.toString()) }

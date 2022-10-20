@@ -1,3 +1,5 @@
+package auxiliary
+
 class Labels {
     companion object {
         const val NAME = "name"
@@ -47,22 +49,52 @@ class Labels {
             WELCOME to TextField("Стартовая панель", "Стартовая панель", "Добро пожаловать"),
             SETTINGS to TextField("Настройки", "Настройки", "Настройки"),
             POWER_MENU to TextField("Питание", "Питание", "Управление питанием"),
-            LOGIN to TextField("Вход при помощи логина и пароля", "Вход в систему", "Введите, пожалуйста, ваши учётные данные"),
+            LOGIN to TextField(
+                "Вход при помощи логина и пароля",
+                "Вход в систему",
+                "Введите, пожалуйста, ваши учётные данные"
+            ),
             BASIC to TextField("Войти как студент", "Меню", "Что Вы желаете сделать?"),
             EXTENDED to TextField("Войти как преподаватель", "Меню", "Что Вы желаете сделать?"),
             ADMIN to TextField("Войти как администратор", "Меню", "Что Вы желаете сделать?"),
             MENU to TextField("Меню", "Меню", "Что Вы желаете сделать?"),
             LIGHT to TextField("Управление\nосвещением", "Освещение", "Да будет свет!"),
-            WINDOW to TextField("Управление\nпроветриванием", "Проветривание", "Свежый воздух - прекрасная подпидка для мозга"),
-            POWER_SUPPLY to TextField("Управление\nпитанием\nоборудования", "Питание оборудования", "Нечего энтропию за зря увеличивать"),
-            ADD_USER to TextField("Добавление\nпользователя", "Добавление пользователя", "Укажите данные нового пользователя"),
+            WINDOW to TextField(
+                "Управление\nпроветриванием",
+                "Проветривание",
+                "Свежый воздух - прекрасная подпидка для мозга"
+            ),
+            POWER_SUPPLY to TextField(
+                "Управление\nпитанием\nоборудования",
+                "Питание оборудования",
+                "Нечего энтропию за зря увеличивать"
+            ),
+            ADD_USER to TextField(
+                "Добавление\nпользователя",
+                "Добавление пользователя",
+                "Укажите данные нового пользователя"
+            ),
             BACK to TextField("Назад"),
-            MESSAGE to TextField(other = mapOf(1 to "Приложите,", 2 to "пожалуйста,", 3 to "свою карточку", 4 to "к сканнеру (=^ω^=)")),
+            MESSAGE to TextField(
+                other = mapOf(
+                    1 to "Приложите,",
+                    2 to "пожалуйста,",
+                    3 to "свою карточку",
+                    4 to "к сканнеру (=^ω^=)"
+                )
+            ),
             EXPAND to TextField("Раскрыть"),
             COLLAPSE to TextField("Скрыть"),
             PORT_CONNECT to TextField("Порт подключения Arduino:", other = mapOf(SETTING_BUTTON to "Найти устройство")),
             SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду")),
-            RECONNECT to TextField("Переподключить", other = mapOf(SEARCH to "Происходит поиск устройств", NOT_FOUND to "Устройство не подключено!", FOUND to "Устройство подключекно к порту: ")),
+            RECONNECT to TextField(
+                "Переподключить",
+                other = mapOf(
+                    SEARCH to "Происходит поиск устройств",
+                    NOT_FOUND to "Устройство не подключено!",
+                    FOUND to "Устройство подключекно к порту: "
+                )
+            ),
             SEND to TextField("Отправить"),
             SWITCH to TextField(other = mapOf(SWITCH_ON to "Включить", SWITCH_OFF to "выключить")),
             GROUP to TextField("Группа №")

@@ -1,3 +1,5 @@
+package materialSwing
+
 import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics
@@ -6,7 +8,7 @@ import javax.swing.border.Border
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 
-class RoundedBorder (
+class RoundedBorder(
     private val radius: Int,
     private val background: Color,
     private val border: Color = background,

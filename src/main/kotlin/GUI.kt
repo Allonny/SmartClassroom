@@ -1,3 +1,5 @@
+import auxiliary.*
+import materialSwing.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -60,7 +62,7 @@ class GUI {
     private val menuButtonsInsets = Insets(10, 10, 10, 10)
     private val menuFieldSize = Dimension(400, 400)
     private val menuSwitchButtonSize = Dimension(150, 150)
-    private val menuSwitchButtonInsets = Insets(10, 10, 10, 10)
+    private val menuSwitchButtonInsets = Insets(25, 10, 25, 10)
     private val settingsFieldSize = Dimension(800, 100)
     private val settingsFieldInsets = Insets(10, 10, 10, 10)
     private val settingButtonSize = Dimension(50, 50)
@@ -412,7 +414,7 @@ class GUI {
                     (loginButtonsSize.height + loginButtonsInsets.top + loginButtonsInsets.bottom)
             val minWidth = mainFrame.width - menuMinFieldWidth
             val maxSize = min(minWidth, minHeight)
-            val line = adaptiveWidthLabel(it.value.toString(), Fonts.TITLE_ALT, maxSize, maxSize)
+            val line = InscribedLabel(it.value.toString(), Fonts.TITLE_ALT, maxSize, maxSize)
             line.foreground = Palette.DISABLE
             text.add(line)
         }
@@ -914,18 +916,23 @@ class GUI {
             groupConstraints.fill = GridBagConstraints.VERTICAL
             groupConstraints.insets = menuSwitchButtonInsets
 
-            val title = adaptiveWidthLabel(Labels[Labels.GROUP].title + (counter + 1).toString(),
-            Fonts.REGULAR_ALT, menuFieldSize.width - 100, menuFieldSize.height - 100)
+            val title = InscribedLabel(
+                Labels[Labels.GROUP].title + (counter + 1).toString(),
+                Fonts.REGULAR_ALT,
+                menuFieldSize.width - 100,
+                menuFieldSize.height - 100
+            )
             title.foreground = Palette.FOREGROUND_ALT
 
             val value = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int
-            val lightSlider = JSlider(DefaultBoundedRangeModel(value, 0, 0, 100))
-            lightSlider.setUI(MaterialSliaderUI(lightSlider))
+
+            val lightSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 100))
+            lightSlider.backgroundToForegroundThicknessRatio = 10.0
+            lightSlider.sliderBackgroundLineColor = Palette.DISABLE
+            lightSlider.sliderForegroundLineColor = Palette.ACCENT_NORMAL
+            lightSlider.thumbColor = Palette.ACCENT_HIGH
+//            lightSlider.thumbIcon = ImageIcon(menuLightIcons[Auxiliary.Labels.SWITCH_ON]?.image?.getScaledInstance(35, 35, Image.SCALE_SMOOTH))
             lightSlider.preferredSize = Dimension(300, 50)
-            lightSlider.majorTickSpacing = 20
-            lightSlider.minorTickSpacing = 10
-//            lightSlider.paintTicks = true
-            lightSlider.snapToTicks = true
             lightSlider.background = Palette.BACKGROUND_ALT
 
             val switchButton = MaterialButton()
@@ -1008,23 +1015,11 @@ class GUI {
     }
 
     private fun setTitle(text: String): JPanel {
-        val title = adaptiveWidthLabel(text.uppercase(), Fonts.TITLE, mainFrame.width - menuMinFieldWidth, maxTitleHeight)
+        val title = InscribedLabel(text.uppercase(), Fonts.TITLE, mainFrame.width - menuMinFieldWidth, maxTitleHeight)
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(title)
         titlePanel.background = Palette.BACKGROUND
         return titlePanel
-    }
-
-    private fun adaptiveWidthLabel(text: String, font: Font, maxWidth: Int, maxHeight: Int, maxIteration: Int = 0): JLabel {
-        val label = JLabel(text)
-        label.font = font
-        var fontSize = 1f
-        var iteration = 0
-        do {
-            label.font = label.font.deriveFont(fontSize)
-            fontSize += (maxWidth - label.maximumSize.width) / 250f
-        } while ((maxWidth - label.maximumSize.width) > 10 && (maxHeight - label.maximumSize.height) > 10 && (iteration++ < maxIteration || maxIteration == 0))
-        return label
     }
 }

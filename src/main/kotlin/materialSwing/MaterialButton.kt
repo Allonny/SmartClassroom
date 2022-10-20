@@ -1,3 +1,5 @@
+package materialSwing
+
 import java.awt.*
 import javax.swing.*
 
@@ -11,6 +13,7 @@ class MaterialButton : JButton {
         const val ICON_BOTTOM = BorderLayout.SOUTH
         val ICON_ORIGINAL_SIZE = Dimension(100, 100)
     }
+
     private val positions: Set<String> = setOf(ICON_CENTER, ICON_LEFT, ICON_RIGHT, ICON_TOP, ICON_BOTTOM)
 
     private val facePanel: JPanel = JPanel(BorderLayout())
@@ -163,7 +166,7 @@ class MaterialButton : JButton {
         }
     }
 
-    constructor() {}
+    constructor()
 
     constructor(title: String?) {
         this.enableFaceTitle = title
