@@ -20,19 +20,6 @@ class InscribedLabel : JLabel {
             }
         }
 
-    var maxIteration: Int = 0
-        set(value) {
-            field = value
-            inscription()
-        }
-
-    var divideStep: Float = 250f
-        set(value) {
-            if (value > 0) {
-                field = value
-                inscription()
-            }
-        }
 
     override fun setFont(font: Font?) {
         super.setFont(font)
@@ -40,12 +27,11 @@ class InscribedLabel : JLabel {
     }
 
     private fun inscription() {
-        var fontSize = 1f
-        var iteration = 0
-        do {
-            this.font = this.font.deriveFont(fontSize)
-            fontSize += (inscriptionWidth - maximumSize.width) / divideStep
-        } while ((inscriptionWidth - maximumSize.width) > 10 && (inscriptionHeight - maximumSize.height) > 10 && (iteration++ < maxIteration || maxIteration <= 0))
+        val widthRatio = inscriptionWidth.toFloat() / maximumSize.width.toFloat()
+        val heightRatio = inscriptionHeight.toFloat() / maximumSize.height.toFloat()
+
+        var fontSize = this.font.size2D * if (heightRatio > widthRatio) widthRatio else heightRatio
+        this.font = this.font.deriveFont(fontSize)
     }
 
     constructor()
