@@ -301,7 +301,7 @@ class GUI {
             val backButton = MaterialButton(Labels[Labels.BACK].title, topPanelIcons[Labels.BACK])
             backButton.cornerRadius = buttonCornerRadius
             backButton.backingColor = Palette.BACKGROUND_ALT
-            backButton.backgroundColor = Palette.ACCENT_HIGH
+            backButton.backgroundColor = Palette.ACCENT_NORMAL
             backButton.foregroundColor = Palette.FOREGROUND
 
             backButton.addActionListener { updateFrame(currentPanel.parent) }
@@ -927,7 +927,6 @@ class GUI {
             val value = settings[Labels.LIGHT_GROUP + "_${counter + 1}"] as Int
 
             val lightSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 100))
-            lightSlider.backgroundToForegroundThicknessRatio = 10.0
             lightSlider.sliderBackgroundLineColor = Palette.DISABLE
             lightSlider.sliderForegroundLineColor = Palette.ACCENT_NORMAL
             lightSlider.thumbColor = Palette.ACCENT_HIGH

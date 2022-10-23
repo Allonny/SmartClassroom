@@ -3,21 +3,46 @@ package materialSwing
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.geom.Ellipse2D
-import java.lang.Integer.max
+import java.awt.geom.RoundRectangle2D
 import javax.swing.ImageIcon
 import javax.swing.JSlider
 import javax.swing.plaf.basic.BasicSliderUI
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
-    private var sliderBackgroundLineThickness: Int = 1
-    private var sliderForegroundLineThickness: Int = 1
+    private var foregroundActualThickness: Int = 0
+    private var backgroundActualThickness: Int = 0
+    private var thumbActualThickness: Int = 0
+    private var thumbActualLength: Int = 0
 
-    var backgroundToForegroundThicknessRatio: Double = 5.0
+    val foregroundThickness: Int get() = foregroundActualThickness
+    val backgroundThickness: Int get() = backgroundActualThickness
+    val thumbThickness: Int get() = thumbActualThickness
+    val thumbLength: Int get() = thumbActualLength
+
+    var foregroundRelativeThickness: Double = 1.0
         set(value) {
-            field = value
+            field = max(value, 1.0)
+            setDecor()
+        }
+
+    var backgroundRelativeThickness: Double = 5.0
+        set(value) {
+            field = max(value, 1.0)
+            setDecor()
+        }
+
+    var thumbRelativeThickness: Double = 1.0
+        set(value) {
+            field = max(value, 1.0)
+            setDecor()
+        }
+
+    var thumbRelativeLength: Double = 1.0
+        set(value) {
+            field = max(value, 1.0)
             setDecor()
         }
 
@@ -45,23 +70,11 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
             setDecor()
         }
 
-    var isSliderBackgroundPaint = true
-        set(value) {
-            field = value
-            setDecor()
-        }
+    var isForegroundPaint = true
 
-    var isSliderForegroundPaint = true
-        set(value) {
-            field = value
-            setDecor()
-        }
+    var isBackgroundPaint = true
 
     var isThumbPaint = true
-        set(value) {
-            field = value
-            setDecor()
-        }
 
     override fun calculateThumbLocation() {
         super.calculateThumbLocation()
@@ -110,21 +123,19 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
         return thumbRect.size
     }
 
-    private fun createThumbShape(radius: Double): Shape {
-        return Ellipse2D.Double(0.0, 0.0, radius, radius)
+    private fun createThumbShape(width: Double, height: Double): Shape {
+        val smallerSide = min(width, height)
+        return RoundRectangle2D.Double(0.0, 0.0, width, height, smallerSide, smallerSide)
     }
 
     override fun paintThumb(g: Graphics) {
         val g2d = g.create() as Graphics2D
-        g2d.setRenderingHint(
-            RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON
-        )
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
         g2d.translate(thumbRect.x, thumbRect.y)
 
         if (isThumbPaint) {
-            val thumbShape: Shape = createThumbShape(sliderForegroundLineThickness.toDouble())
+            val thumbShape: Shape = createThumbShape(thumbRect.width.toDouble(), thumbRect.height.toDouble())
             g2d.color = thumbColor
             g2d.fill(thumbShape)
 
@@ -144,50 +155,51 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
         val g2d = g.create() as Graphics2D
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
+        val shift = thumbLength - thumbThickness
+
         g2d.translate(trackRect.x, trackRect.y)
         if (slider.orientation == JSlider.HORIZONTAL) {
-            if (isSliderBackgroundPaint) {
+            if (isBackgroundPaint) {
                 g2d.color = sliderBackgroundLineColor
                 g2d.fillRoundRect(
-                    -sliderBackgroundLineThickness / 2,
-                    (trackRect.height - sliderBackgroundLineThickness) / 2,
-                    trackRect.width,
-                    sliderBackgroundLineThickness,
-                    sliderBackgroundLineThickness, sliderBackgroundLineThickness
-                )
+                    - (shift + backgroundThickness) / 2,
+                    (trackRect.height - backgroundThickness) / 2,
+                    trackRect.width + shift + backgroundThickness,
+                    backgroundThickness,
+                    backgroundThickness, backgroundThickness)
             }
 
-            if (isSliderForegroundPaint) {
+            if (isForegroundPaint) {
                 g2d.color = sliderForegroundLineColor
                 g2d.fillRoundRect(
-                    -thumbRect.width / 2,
-                    (trackRect.height - sliderForegroundLineThickness) / 2,
-                    thumbRect.x + thumbRect.width,
-                    sliderForegroundLineThickness,
-                    sliderForegroundLineThickness, sliderForegroundLineThickness
+                    - (shift + foregroundThickness) / 2,
+                    (trackRect.height - foregroundThickness) / 2,
+                    thumbRect.x + shift + foregroundThickness,
+                    foregroundThickness,
+                    foregroundThickness, foregroundThickness
                 )
             }
 
         } else {
-            if (isSliderBackgroundPaint) {
+            if (isBackgroundPaint) {
                 g2d.color = sliderBackgroundLineColor
                 g2d.fillRoundRect(
-                    (trackRect.width - sliderBackgroundLineThickness) / 2,
-                    -sliderBackgroundLineThickness / 2,
-                    sliderBackgroundLineThickness,
-                    trackRect.height + sliderBackgroundLineThickness,
-                    sliderBackgroundLineThickness, sliderBackgroundLineThickness
+                    (trackRect.width - backgroundThickness) / 2,
+                    - (shift + backgroundThickness) / 2,
+                    backgroundThickness,
+                    trackRect.height + shift + backgroundThickness,
+                    backgroundThickness, backgroundThickness
                 )
             }
 
-            if (isSliderForegroundPaint) {
+            if (isForegroundPaint) {
                 g2d.color = sliderForegroundLineColor
                 g2d.fillRoundRect(
-                    (trackRect.width - sliderForegroundLineThickness) / 2,
-                    thumbRect.y - thumbRect.height / 2,
-                    sliderForegroundLineThickness,
-                    trackRect.height - thumbRect.y + thumbRect.height,
-                    sliderForegroundLineThickness, sliderForegroundLineThickness
+                    (trackRect.width - foregroundThickness) / 2,
+                    thumbRect.y - (shift + foregroundThickness) / 2,
+                    foregroundThickness,
+                    trackRect.height - (thumbRect.y + shift + foregroundThickness),
+                    foregroundThickness, foregroundThickness
                 )
             }
         }
@@ -197,17 +209,23 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
 
     private fun setDecor() {
         val c = this.slider!!
-        sliderForegroundLineThickness = min(c.preferredSize.height, c.preferredSize.width)
-        sliderBackgroundLineThickness = (sliderForegroundLineThickness / backgroundToForegroundThicknessRatio).toInt()
+        val smallerSide = min(c.preferredSize.height, c.preferredSize.width)
+        foregroundActualThickness = (smallerSide / foregroundRelativeThickness).toInt()
+        backgroundActualThickness = (smallerSide / backgroundRelativeThickness).toInt()
+        thumbActualThickness = (smallerSide / thumbRelativeThickness).toInt()
+        thumbActualLength = (thumbActualThickness * thumbRelativeLength).toInt()
 
-        val maxThickness = max(sliderForegroundLineThickness, sliderBackgroundLineThickness)
+        val maxThickness = maxOf(foregroundThickness, backgroundThickness, thumbThickness)
+        val maxShift = (maxThickness * thumbRelativeLength).toInt()
 
-        if (slider.orientation == JSlider.HORIZONTAL)
-            trackRect?.setSize(c.preferredSize.width - maxThickness, maxThickness)
-        else
-            trackRect?.setSize(maxThickness, c.preferredSize.height - maxThickness)
-
-        thumbRect?.setSize(sliderForegroundLineThickness, sliderForegroundLineThickness)
+        if (c.orientation == JSlider.HORIZONTAL) {
+            trackRect?.setSize(c.preferredSize.width - maxShift, maxThickness)
+            thumbRect?.setSize(thumbLength, thumbThickness)
+        }
+        else {
+            trackRect?.setSize(maxThickness, c.preferredSize.height - maxShift)
+            thumbRect?.setSize(thumbThickness, thumbLength)
+        }
     }
 
     init {

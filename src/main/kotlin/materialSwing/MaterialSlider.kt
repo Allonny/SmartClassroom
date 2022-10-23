@@ -6,55 +6,54 @@ import javax.swing.ImageIcon
 import javax.swing.JSlider
 
 class MaterialSlider(brm: BoundedRangeModel) : JSlider() {
-    var backgroundToForegroundThicknessRatio: Double = 5.0
-        set(value) {
-            if (backgroundToForegroundThicknessRatio > 0.0) {
-                field = value
-                materialUI.backgroundToForegroundThicknessRatio = this.backgroundToForegroundThicknessRatio
-            }
-        }
+    val foregroundThickness: Int get() = materialUI.foregroundThickness
+    val backgroundThickness: Int get() = materialUI.backgroundThickness
+    val thumbThickness: Int get() = materialUI.thumbThickness
+    val thumbLength: Int get() = materialUI.thumbLength
 
-    var sliderBackgroundLineColor: Color = Color.LIGHT_GRAY
-        set(value) {
-            field = value
-            materialUI.sliderBackgroundLineColor = this.sliderBackgroundLineColor
-        }
+    var foregroundRelativeThickness: Double
+        get() = materialUI.foregroundRelativeThickness
+        set(value) { materialUI.foregroundRelativeThickness = value }
 
-    var sliderForegroundLineColor: Color = Color.BLUE
-        set(value) {
-            field = value
-            materialUI.sliderForegroundLineColor = this.sliderForegroundLineColor
-        }
+    var backgroundRelativeThickness: Double
+        get() = materialUI.backgroundRelativeThickness
+        set(value) { materialUI.backgroundRelativeThickness = value }
 
-    var thumbColor: Color = Color.CYAN
-        set(value) {
-            field = value
-            materialUI.thumbColor = this.thumbColor
-        }
+    var thumbRelativeThickness: Double
+        get() = materialUI.thumbRelativeThickness
+        set(value) { materialUI.thumbRelativeThickness = value }
 
-    var thumbIcon: ImageIcon? = null
-        set(value) {
-            field = value
-            materialUI.thumbIcon = this.thumbIcon
-        }
+    var thumbRelativeLength: Double
+        get() = materialUI.thumbRelativeLength
+        set(value) { materialUI.thumbRelativeLength= value }
 
-    var isSliderBackgroundPaint = true
-        set(value) {
-            field = value
-            materialUI.isSliderBackgroundPaint = isSliderBackgroundPaint
-        }
+    var sliderForegroundLineColor: Color
+        get() = materialUI.sliderForegroundLineColor
+        set(value) { materialUI.sliderForegroundLineColor = value }
 
-    var isSliderForegroundPaint = true
-        set(value) {
-            field = value
-            materialUI.isSliderForegroundPaint = isSliderForegroundPaint
-        }
+    var sliderBackgroundLineColor: Color
+        get() = materialUI.sliderBackgroundLineColor
+        set(value) { materialUI.sliderBackgroundLineColor = value }
 
-    var isThumbPaint = true
-        set(value) {
-            field = value
-            materialUI.isThumbPaint = isThumbPaint
-        }
+    var thumbColor: Color
+        get() = materialUI.thumbColor
+        set(value) { materialUI.thumbColor = value }
+
+    var thumbIcon: ImageIcon?
+        get() = materialUI.thumbIcon
+        set(value) { materialUI.thumbIcon = value }
+
+    var isForegroundPaint: Boolean
+        get() = materialUI.isForegroundPaint
+        set(value) { materialUI.isForegroundPaint = value }
+
+    var isBackgroundPaint: Boolean
+        get() = materialUI.isBackgroundPaint
+        set(value) { materialUI.isBackgroundPaint = value }
+
+    var isThumbPaint: Boolean
+        get() = materialUI.isThumbPaint
+        set(value) { materialUI.isThumbPaint = value }
 
     private val materialUI: MaterialSliderUI = MaterialSliderUI(this)
 
