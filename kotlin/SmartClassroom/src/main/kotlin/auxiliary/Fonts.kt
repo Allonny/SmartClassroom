@@ -6,7 +6,10 @@ import java.io.File
 object Fonts {
     val TITLE: Font =
         Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/SoyuzGroteskBold/Soyuz Grotesk Bold.otf"""))
-    val TITLE_ALT: Font = Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Thin.ttf"""))
+    val TITLE_ALT: Font =
+        Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Thin.ttf"""))
+    val SUBTITLE: Font =
+        Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Bold.ttf"""))
     val REGULAR: Font =
         Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
     val REGULAR_ALT: Font =

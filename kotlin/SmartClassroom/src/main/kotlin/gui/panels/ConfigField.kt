@@ -1,184 +1,220 @@
 package gui.panels
 
+import SerialManager
 import auxiliary.Fonts
 import auxiliary.Labels
 import auxiliary.Palette
-import gui.GUIConstants
 import gui.materialSwing.MaterialButton
-import gui.materialSwing.MaterialTextArea
-import gui.materialSwing.RoundedBorder
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import javax.swing.*
 
 class ConfigField(private val context: Context): FieldPanel() {
-    override val titleText : String = Labels[Labels.SERIAL_LOG].title
+    override val titleText : String = Labels[Labels.CONFIG].title
+    override val titleIcon: JLabel = JLabel(GUIConstants.settingsIcons[Labels.CONFIG])
+
+    private val pins: Map<Int, ArrayList<Int>> = mapOf<Int, ArrayList<Int>>(
+        SerialManager.NONE_ID to arrayListOf(),
+        SerialManager.LIGHT_ID to arrayListOf(),
+        SerialManager.WINDOW_ID to arrayListOf(),
+        SerialManager.POWER_ID to arrayListOf()).withDefault { arrayListOf() }
+    private var reset = true
+
+    private val contentPanel = Box(BoxLayout.Y_AXIS)
+    private val lightPanel = JPanel()
+    private val windowPanel = JPanel()
+    private val powerPanel = JPanel()
+    private val buttonsPanel = JPanel(GridLayout(1, 2, GUIConstants.menuButtonsInsets.top, GUIConstants.menuButtonsInsets.left))
+
+    override fun update() {
+        reset = true
+        super.update()
+    }
 
     override fun setContent() {
         super.setContent()
 
+        contentPanel.removeAll()
+        buttonsPanel.removeAll()
+
         if(isExpanded) {
-            val terminalView = JPanel()
-            var logScroll = JScrollPane()
-            val serialLogTextField = JTextField("", 1)
-            val serialLogSendButton = MaterialButton(Labels[Labels.SEND].title)
+            if (reset) {
+                reset = false
+                println(context.serialManager!!.pinmap)
+                pins.forEach { it.value.clear() }
+                context.serialManager!!.pinmap.forEachIndexed { index, pin ->
+                    if(pin.type and SerialManager.ALLOW_PIN == SerialManager.ALLOW_PIN) {
+                        pins[pin.id and SerialManager.ID_MASK]!!.add(index)
+                        pins.forEach { it.value.sort() }
+                    }
+                }
+            }
 
-            val lightPanel = JPanel(GridLayout())
-            val windowPanel = JPanel(GridLayout())
-            val powerPanel = JPanel(GridLayout())
+            println(pins)
 
-            fun setLogPanel()  {
-                logScroll.isVisible = false
-                logScroll.removeAll()
-                var logPanel = JPanel(BorderLayout())
-                logScroll = JScrollPane(logPanel)
+            fun setPanel(panel: JPanel, id: Int) {
+                panel.removeAll()
+                panel.background = Palette.BACKGROUND_ALT
 
-                logScroll.border = BorderFactory.createEmptyBorder()
-                logScroll.background = Palette.BACKGROUND
+                val constraints = GridBagConstraints()
+                constraints.fill = GridBagConstraints.HORIZONTAL
 
-                logPanel.background = logScroll.background
+                val layout = GridBagLayout()
+                panel.layout = layout
 
-                context.serialManager!!.log.forEach {
-                    if (it.second.isEmpty()) return@forEach
-                    val linePanel = JPanel(GridBagLayout())
-                    linePanel.background = Palette.BACKGROUND
-                    val lineConstraints = GridBagConstraints()
-                    lineConstraints.fill = GridBagConstraints.HORIZONTAL
+                pins[id]!!.forEachIndexed { index, pinNumber ->
+                    val pinLabel = JLabel("${Labels[Labels.CONFIG].other[Labels.PIN] as String} $pinNumber")
+                    pinLabel.font = Fonts.REGULAR_ALT.deriveFont(20f)
+                    pinLabel.alignmentX = 1.0f
 
-                    lineConstraints.insets = GUIConstants.settingTerminalRecordInsets
-                    lineConstraints.weightx = 0.0
-                    lineConstraints.gridwidth = 1
-                    lineConstraints.gridy = 0
-                    val gridx = if (it.first == SerialManager.KEYWORD_INPUT) 0 else 1
-                    lineConstraints.gridx = gridx
-                    val color = if (it.first == SerialManager.KEYWORD_INPUT) Palette.ACCENT_LOW else Palette.DISABLE
+                    constraints.weightx = 1.0
+                    constraints.gridwidth = 1
+                    constraints.gridx = 0
+                    constraints.gridy = index
+                    constraints.insets = GUIConstants.menuButtonsInsets
 
-                    val message = JPanel(BorderLayout())
-                    message.background = logPanel.background
-                    message.border = RoundedBorder(20, color)
+                    panel.add(pinLabel, constraints)
 
-                    val text = MaterialTextArea(it.second.replace(",", ",\n"))
-                    text.background = color
-                    text.foreground = Palette.FOREGROUND_ALT
-                    text.border = BorderFactory.createEmptyBorder()
-                    text.isEditable = false
-                    text.lineWrap = true
-                    text.columns = 40
-                    text.font = Fonts.MONO.deriveFont(20f)
+                    val pinType = JLabel()
+                    val type = context.serialManager!!.pinmap[pinNumber].type
+                    if(type and SerialManager.PWM_PIN == SerialManager.PWM_PIN) pinType.text = Labels[Labels.CONFIG].other[Labels.PWM] as String
+                    else if(type and SerialManager.ADC_PIN == SerialManager.ADC_PIN) pinType.text = Labels[Labels.CONFIG].other[Labels.ADC] as String
+                    else pinType.text = Labels[Labels.CONFIG].other[Labels.DIGITAL] as String
+                    pinType.font = Fonts.REGULAR_ALT.deriveFont(20f)
+                    pinType.alignmentX = -1.0f
 
-                    text.addMouseListener(object : MouseAdapter() {
-                        override fun mouseReleased(e: MouseEvent?) {
-                            serialLogTextField.text = text.text.replace("\n", "")
-                        }
-                    })
+                    constraints.weightx = 1.0
+                    constraints.gridwidth = 1
+                    constraints.gridx = 1
+                    constraints.gridy = index
+                    constraints.insets = GUIConstants.menuButtonsInsets
 
-                    setSize(message, lineConstraints, message.minimumSize, changeableHeight = true)
-                    message.add(text, BorderLayout.CENTER)
-                    linePanel.add(message, lineConstraints)
+                    panel.add(pinType, constraints)
 
-                    lineConstraints.weightx = 1.0
-                    lineConstraints.gridx = 1 - gridx
+                    val deleteButton = MaterialButton(Labels[Labels.CONFIG].other[Labels.DELETE] as String)
+                    deleteButton.cornerRadius = GUIConstants.buttonCornerRadius
+                    deleteButton.backingColor = Palette.BACKGROUND_ALT
+                    deleteButton.backgroundColor = Palette.ACCENT_HIGH
+                    deleteButton.foregroundColor = Palette.FOREGROUND
+                    deleteButton.disableBackgroundColor = Palette.DISABLE
+                    deleteButton.disableForegroundColor = Palette.FOREGROUND_ALT
+                    deleteButton.font = Fonts.REGULAR.deriveFont(20f)
 
-                    val space = JLabel()
-                    setSize(space, lineConstraints, null)
-                    linePanel.add(space, lineConstraints)
+                    deleteButton.addActionListener {
+                        println(id)
+                        println(pinNumber)
+                        pins[id]!!.remove(pinNumber)
+                        pins[SerialManager.NONE_ID]!!.add(pinNumber)
+                        pins[SerialManager.NONE_ID]!!.sort()
+                        setContent()
+                        super.update()
+                    }
 
-                    val newLogPanel = JPanel(BorderLayout())
-                    newLogPanel.background = Palette.BACKGROUND
-                    newLogPanel.add(linePanel, BorderLayout.NORTH)
-                    logPanel.add(newLogPanel, BorderLayout.SOUTH)
-                    logPanel = newLogPanel
+                    constraints.weightx = 1.0
+                    constraints.gridwidth = 1
+                    constraints.gridx = 2
+                    constraints.gridy = index
+                    constraints.insets = GUIConstants.menuButtonsInsets
+
+                    panel.add(deleteButton, constraints)
                 }
 
-                logScroll.verticalScrollBar.unitIncrement = GUIConstants.scrollSpeed
-                logScroll.verticalScrollBar.value = logScroll.verticalScrollBar.maximum
+                constraints.weightx = 1.0
+                constraints.gridwidth = 1
+                constraints.gridx = 0
+                constraints.gridy = pins[id]!!.size
+                constraints.insets = GUIConstants.menuButtonsInsets
 
-                logScroll.isVisible = true
-            }
+                panel.add(JLabel(), constraints)
 
-            fun sendData() {
-                if (serialLogTextField.text.isEmpty()) return
-                context.serialManager!!.send(serialLogTextField.text.trim())
-                serialLogTextField.text = ""
-            }
+                val newPinArray = arrayOf(Labels[Labels.CONFIG].other[Labels.ADD], *(pins[0]!!.map { v -> v.toString() }.toTypedArray()))
+                val newPinCombo = JComboBox(newPinArray)
+                newPinCombo.selectedIndex = 0
+                newPinCombo.font = Fonts.MONO.deriveFont(20f)
 
-            val contentPanel = JPanel(GridBagLayout())
-            contentPanel.background = Palette.BACKGROUND_ALT
+                newPinCombo.addActionListener {
+                    if (newPinCombo.selectedIndex == 0) return@addActionListener
 
-            val constraints = GridBagConstraints()
-            constraints.fill = GridBagConstraints.BOTH
-
-            constraints.insets = GUIConstants.settingsFieldInsets
-
-            constraints.gridx = 0
-            constraints.gridy = 0
-            constraints.gridwidth = 2
-            constraints.weightx = 0.0
-
-            terminalView.layout = BorderLayout()
-            terminalView.background = Palette.BACKGROUND_ALT
-            terminalView.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3)
-
-            setLogPanel()
-
-            terminalView.add(logScroll, BorderLayout.CENTER)
-            terminalView.minimumSize = Dimension(0, 0)
-            terminalView.maximumSize = terminalView.minimumSize
-            terminalView.size = terminalView.maximumSize
-            terminalView.preferredSize = terminalView.size
-
-            setSize(terminalView, constraints, GUIConstants.settingTerminalSize, changeableWidth = true)
-            contentPanel.add(terminalView, constraints)
-
-            constraints.gridx = 0
-            constraints.gridy = 1
-            constraints.gridwidth = 1
-            constraints.weightx = 1.0
-
-            val backing = JPanel(BorderLayout())
-            backing.background = Palette.BACKGROUND_ALT
-            backing.border = RoundedBorder(20, Palette.BACKGROUND, Palette.ACCENT_NORMAL, 3)
-
-            serialLogTextField.background = Palette.BACKGROUND
-            serialLogTextField.foreground = Palette.FOREGROUND_ALT
-            serialLogTextField.border = BorderFactory.createEmptyBorder()
-            serialLogTextField.font = Fonts.MONO.deriveFont(20f)
-
-            serialLogTextField.addKeyListener(object : KeyAdapter() {
-                override fun keyReleased(e: KeyEvent?) {
-                    if (e!!.keyCode == KeyEvent.VK_ENTER) sendData()
-                    serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
+                    pins[SerialManager.NONE_ID]!!.remove(newPinCombo.selectedItem!!.toString().toInt())
+                    pins[id]!!.add(newPinCombo.selectedItem!!.toString().toInt())
+                    pins[id]!!.sort()
+                    setContent()
+                    super.update()
                 }
-            })
 
-            backing.add(serialLogTextField, BorderLayout.CENTER)
-            setSize(backing, constraints, null)
-            contentPanel.add(backing, constraints)
+                constraints.weightx = 1.0
+                constraints.gridwidth = 3
+                constraints.gridx = 1
+                constraints.gridy = pins[id]!!.size
+                constraints.insets = GUIConstants.menuButtonsInsets
 
-            serialLogSendButton.cornerRadius = GUIConstants.buttonCornerRadius
-            serialLogSendButton.backingColor = Palette.BACKGROUND_ALT
-            serialLogSendButton.backgroundColor = Palette.ACCENT_NORMAL
-            serialLogSendButton.disableBackgroundColor = Palette.DISABLE
-            serialLogSendButton.foregroundColor = Palette.FOREGROUND
-            serialLogSendButton.disableForegroundColor = Palette.FOREGROUND_ALT
-            serialLogSendButton.font = Fonts.REGULAR.deriveFont(20f)
-
-            serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
-            serialLogSendButton.addActionListener {
-                sendData()
-                serialLogSendButton.isEnabled = serialLogTextField.text.isNotEmpty()
+                if(pins[id]!!.size < SerialManager.GROUP_MAX_COUNT) panel.add(newPinCombo, constraints)
             }
 
-            constraints.gridx = 1
-            setSize(serialLogSendButton, constraints, Dimension(250, GUIConstants.settingButtonSize.height))
-            contentPanel.add(serialLogSendButton, constraints)
+            val lightTitle = JLabel(Labels[Labels.CONFIG].other[Labels.LIGHT_GROUP] as String)
+            lightTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+
+            val windowTitle = JLabel(Labels[Labels.CONFIG].other[Labels.WINDOW_GROUP] as String)
+            windowTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+
+            val powerTitle = JLabel(Labels[Labels.CONFIG].other[Labels.POWER_SUPPLY_GROUP] as String)
+            powerTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+
+            setPanel(lightPanel, SerialManager.LIGHT_ID)
+            setPanel(windowPanel, SerialManager.WINDOW_ID)
+            setPanel(powerPanel, SerialManager.POWER_ID)
+
+            val resetButton = MaterialButton(Labels[Labels.CONFIG].other[Labels.RESET] as String)
+            resetButton.cornerRadius = GUIConstants.buttonCornerRadius
+            resetButton.backingColor = Palette.BACKGROUND_ALT
+            resetButton.backgroundColor = Palette.ACCENT_HIGH
+            resetButton.foregroundColor = Palette.FOREGROUND
+            resetButton.disableBackgroundColor = Palette.DISABLE
+            resetButton.disableForegroundColor = Palette.FOREGROUND_ALT
+            resetButton.font = Fonts.REGULAR.deriveFont(20f)
+            resetButton.addActionListener{
+                reset = true
+                update()
+            }
+
+            buttonsPanel.add(resetButton)
+
+            val acceptButton = MaterialButton(Labels[Labels.CONFIG].other[Labels.APPLY] as String)
+            acceptButton.cornerRadius = GUIConstants.buttonCornerRadius
+            acceptButton.backingColor = Palette.BACKGROUND_ALT
+            acceptButton.backgroundColor = Palette.ACCENT_NORMAL
+            acceptButton.foregroundColor = Palette.FOREGROUND
+            acceptButton.disableBackgroundColor = Palette.DISABLE
+            acceptButton.disableForegroundColor = Palette.FOREGROUND_ALT
+            acceptButton.font = Fonts.REGULAR.deriveFont(20f)
+            acceptButton.addActionListener {
+
+                var configLine = ""
+                for (pin in context.serialManager!!.pinmap.indices) {
+                    configLine += when (pin) {
+                        in pins[SerialManager.NONE_ID]!! -> "%02X".format(SerialManager.NONE_ID)
+                        in pins[SerialManager.LIGHT_ID]!! -> "%02X".format(SerialManager.LIGHT_ID)
+                        in pins[SerialManager.WINDOW_ID]!! -> "%02X".format(SerialManager.WINDOW_ID)
+                        in pins[SerialManager.POWER_ID]!! -> "%02X".format(SerialManager.POWER_ID)
+                        else -> "00"
+                    }
+                }
+
+                context.serialManager!!.send(SerialManager.LABEL_CONFIG to configLine)
+            }
+
+            buttonsPanel.add(acceptButton)
+
+            contentPanel.add(lightTitle)
+            contentPanel.add(lightPanel)
+            contentPanel.add(windowTitle)
+            contentPanel.add(windowPanel)
+            contentPanel.add(powerTitle)
+            contentPanel.add(powerPanel)
+            contentPanel.add(buttonsPanel)
+
             add(contentPanel, BorderLayout.CENTER)
         }
     }

@@ -22,6 +22,8 @@ class Icons(size: Int, vararg iconsName: Pair<String, String>) {
         const val COLLAPSE = """resources/images/png/foreground/collapse.png"""
         const val SERIAL = """resources/images/png/foreground/serial.png"""
         const val CONSOLE = """resources/images/png/foreground/terminal.png"""
+        const val CONFIG = """resources/images/png/foreground/config.png"""
+        const val INFO = """resources/images/png/foreground/info.png"""
     }
 
     object ForegroundAlt {
@@ -42,6 +44,8 @@ class Icons(size: Int, vararg iconsName: Pair<String, String>) {
         const val COLLAPSE = """resources/images/png/foreground_alt/collapse.png"""
         const val SERIAL = """resources/images/png/foreground_alt/serial.png"""
         const val CONSOLE = """resources/images/png/foreground_alt/terminal.png"""
+        const val CONFIG = """resources/images/png/foreground_alt/config.png"""
+        const val INFO = """resources/images/png/foreground_alt/info.png"""
     }
 
     companion object {

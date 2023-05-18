@@ -3,7 +3,6 @@ package gui.panels
 import auxiliary.Fonts
 import auxiliary.Labels
 import auxiliary.Palette
-import gui.GUIConstants
 import gui.materialSwing.MaterialButton
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints

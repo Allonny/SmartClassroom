@@ -18,7 +18,6 @@ class Labels {
         const val LIGHT = "light"
         const val WINDOW = "window"
         const val POWER_SUPPLY = "power_supply"
-
         const val ADD_USER = "addUser"
         const val SUPER_USER = "superuser"
         const val ENTER = "enter"
@@ -32,11 +31,23 @@ class Labels {
         const val CONTENT = SET + "_content"
         const val PORT_CONNECT = SET + "_port_connect"
         const val SERIAL_LOG = SET + "_serial_log"
+        const val CONFIG = SET + "_config"
         const val SETTING_LABEL = SET + "_label"
         const val SETTING_BUTTON = SET + "_button"
         const val SETTING_TEXTFIELD = SET + "_textfield"
         const val RECONNECT = "reconnect"
         const val SEND = "send"
+        const val RESET = "reset"
+        const val APPLY = "apply"
+        const val ADD = "add"
+        const val DELETE = "delete"
+        const val PWM = "pwm"
+        const val ADC = "adc"
+        const val DIGITAL = "digital"
+        const val PIN = "pin"
+        const val ABOUT = "about"
+        const val LINK = "link"
+        const val TEXT = "text"
         const val SEARCH = "search"
         const val FOUND = "found"
         const val NOT_FOUND = "not_found"
@@ -100,17 +111,37 @@ class Labels {
             ),
             EXPAND to TextField("Раскрыть"),
             COLLAPSE to TextField("Скрыть"),
-            PORT_CONNECT to TextField("Порт подключения Arduino:", other = mapOf(SETTING_BUTTON to "Найти устройство")),
-            SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду")),
             RECONNECT to TextField(
                 "Переподключить",
                 other = mapOf(
                     SEARCH to "Происходит поиск устройств",
                     NOT_FOUND to "Устройство не подключено!",
-                    FOUND to "Устройство подключекно к порту: "
+                    FOUND to "Подключено к порту: "
                 )
             ),
+            PORT_CONNECT to TextField("Порт подключения Arduino:", other = mapOf(SETTING_BUTTON to "Найти устройство")),
+            SERIAL_LOG to TextField("История команд", other = mapOf(SETTING_TEXTFIELD to "Введите команду")),
             SEND to TextField("Отправить"),
+            CONFIG to TextField("Настроить функциональные группы", other = mapOf(
+                LIGHT_GROUP to "Контроль освещения",
+                WINDOW_GROUP to "Проветривание",
+                POWER_SUPPLY_GROUP to "Питание оборудования",
+                APPLY to "Принять",
+                RESET to "Сброисть",
+                ADD to "Добавить вывод",
+                DELETE to "Удалить",
+                PWM to "ШИМ",
+                ADC to "Аналоговый",
+                DIGITAL to "Цифровой",
+                PIN to "Выход"
+            )),
+            ABOUT to TextField("О программе", other = mapOf(
+                TEXT + 1 to "Данная программа является результатом дипломного проекта, все исходные коды которого (если я не забуду их выложить, разумеется) можно найти в данном репозитории:",
+                LINK to "https://github.com/Allonny/SmartClassroom",
+                TEXT + 2 to "Надеюсь, я не заброшу проект после получения диплома и начала работы...",
+                TEXT + 3 to "Во всяком случае надеюсь, с вами всё хорошо, а главное, не забывайте, что вы самое невероятное чудо, вот!",
+                TEXT + 4 to "Ваша ~Allonny~"
+            )),
             SWITCH to TextField(other = mapOf(SWITCH_ON to "Включить", SWITCH_OFF to "Выключить")),
             LIGHT_GROUP to TextField(other = mapOf(LIGHT_ON to "Включить", LIGHT_OFF to "Выключить")),
             WINDOW_GROUP to TextField(other = mapOf(WINDOW_ON to "Открыть", WINDOW_OFF to "Закрыть")),

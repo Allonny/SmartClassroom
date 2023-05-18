@@ -2,7 +2,6 @@ package gui.panels
 
 import auxiliary.Fonts
 import auxiliary.Palette
-import gui.GUIConstants
 import gui.materialSwing.InscribedLabel
 import java.awt.*
 import java.lang.Exception

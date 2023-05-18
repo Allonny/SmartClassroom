@@ -4,7 +4,6 @@ import SerialManager
 import auxiliary.Fonts
 import auxiliary.Labels
 import auxiliary.Palette
-import gui.GUIConstants
 import gui.materialSwing.InscribedLabel
 import gui.materialSwing.MaterialButton
 import gui.materialSwing.MaterialSlider

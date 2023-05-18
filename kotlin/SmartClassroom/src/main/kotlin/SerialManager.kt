@@ -89,8 +89,6 @@ class SerialManager (val dataBus: DataBus) {
         LABEL_POWER_SUPPLY to powerGroup
     )
 
-
-
     var serialSpeed: Int = 9600
     var serialDataBits: Int = 8
     var serialStopBits: Int = 1
@@ -134,15 +132,16 @@ class SerialManager (val dataBus: DataBus) {
 
                 receivedLine.trim().split(KEYWORD_ENDLINE).forEach {
                     if (it.isEmpty()) return@forEach
-
                     val jsonString = '{' + it.substringBefore('}').substringAfterLast('{') + '}'
+
                     try {
-                        receivedData.putAll(parserJSON(jsonString))
                         appendLog(KEYWORD_INPUT to jsonString)
+                    } catch (e: Exception) { println("$e - \'$jsonString\'") }
+                    try {
+                        receivedData.clear()
+                        receivedData.putAll(parserJSON(jsonString))
                         listener.dataReceived(receivedData as Map<String, String>)
-                    } catch (e: Exception) {
-                        println(e.toString() + "\'$it\'")
-                    }
+                    } catch (e: Exception) { println("$e - \'$receivedData\'") }
                 }
                 receivedLine = ""
             }
@@ -197,7 +196,6 @@ class SerialManager (val dataBus: DataBus) {
 
     fun get(param: String): String? {
         val value = receivedData[param]
-        receivedData.remove(param)
         return value
     }
 
@@ -218,7 +216,6 @@ class SerialManager (val dataBus: DataBus) {
                     for (attempt in 1..attempts) {
                         val response = get(LABEL_ECHO, LABEL_STARTUP)
                         if (response.isNotEmpty() && (response[LABEL_ECHO] == KEYWORD_ECHO || response[LABEL_STARTUP] == KEYWORD_DONE) ) {
-                            remove(LABEL_ECHO, LABEL_STARTUP)
                             foundPort = it
                             return@forEach
                         }
@@ -234,7 +231,6 @@ class SerialManager (val dataBus: DataBus) {
 
             scanningPorts = false
             listener.portFound(foundPort)
-            send(LABEL_CONFIG to KEYWORD_MAP)
         }.start()
     }
 
@@ -244,30 +240,37 @@ class SerialManager (val dataBus: DataBus) {
         if (LABEL_MAP in params) {
             val pintypes: String = params[LABEL_MAP]!!
             if(!isHex(pintypes)) return
-            
+            receivedData.remove(LABEL_MAP)
+
             pinmap.clear()
             for (i in pintypes.indices step 2) {
                 val type = pintypes.substring(i, i + 2)
-                pinmap.add(Pin( type.toInt(16), 0 ))
+                pinmap.add(Pin(type.toInt(16), 0))
             }
-            receivedData.remove(LABEL_MAP)
+            println(pinmap)
             
             send(LABEL_CONFIG to KEYWORD_GET)
         }
 
         if (LABEL_CONFIG in params) {
+            val value = get(LABEL_CONFIG)
+
+            if(value == KEYWORD_DONE) {
+                if(pinmap.isEmpty()) send(LABEL_CONFIG to KEYWORD_MAP)
+                else send(LABEL_CONFIG to KEYWORD_SAVE)
+                return
+            }
+            val pinid: String = value!!
+            if(!isHex(pinid)) return
+
             lightGroup.clear()
             windowGroup.clear()
             powerGroup.clear()
-
-            val pinid: String = params[LABEL_CONFIG]!!
-            if(!isHex(pinid)) return
 
             for (i in pinid.indices step 2) {
                 val id = pinid.substring(i, i + 2)
                 pinmap[i / 2].id = id.toInt(16)
             }
-            receivedData.remove(LABEL_CONFIG)
 
             listener.syncConfig(pinmap)
             
@@ -281,6 +284,10 @@ class SerialManager (val dataBus: DataBus) {
             }
 
             listener.groupsUpdated(funcGroups)
+        }
+
+        if (LABEL_SAVE in params) {
+            if(get(LABEL_SAVE) == KEYWORD_DONE) send(LABEL_CONFIG to KEYWORD_GET)
         }
     }
 
@@ -324,7 +331,6 @@ class SerialManager (val dataBus: DataBus) {
 
         override var groupsUpdated: (Map<String, ArrayList<Pinstate>>) -> Unit = { value -> groupsUpdatedListeners.forEach { it(value) } }
             set(value) { groupsUpdatedListeners.add(value) }
-
     }
 
     fun addPortFoundListener(portFount: (String?) -> Unit) {

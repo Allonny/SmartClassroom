@@ -1,6 +1,3 @@
-import com.couchbase.lite.MutableDocument
-import gui.GUIManager
-
 fun main() {
     System.setProperty("awt.useSystemAAFontSettings","on")
     System.setProperty("swing.aatext", "true")

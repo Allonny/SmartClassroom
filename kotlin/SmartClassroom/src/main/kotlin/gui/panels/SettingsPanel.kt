@@ -2,7 +2,6 @@ package gui.panels
 
 import auxiliary.Labels
 import auxiliary.Palette
-import gui.GUIConstants
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -47,6 +46,8 @@ class SettingsPanel(private val context: Context): BasePanel(context) {
             settingFields.add(when(it) {
                 Labels.PORT_CONNECT -> ConnectionField(context)
                 Labels.SERIAL_LOG -> SerialLogField(context)
+                Labels.CONFIG -> ConfigField(context)
+                Labels.ABOUT -> AboutField(context)
                 else -> FieldPanel()
             })
 
@@ -61,8 +62,6 @@ class SettingsPanel(private val context: Context): BasePanel(context) {
                     else -> settingField.isExpanded
                 }
 
-//                settingField.setTitle()
-//                settingField.setContent()
                 settingField.update()
             }
 
@@ -83,6 +82,6 @@ class SettingsPanel(private val context: Context): BasePanel(context) {
             settingField.update()
         }
 
-        super.update()
+        //super.update()
     }
 }

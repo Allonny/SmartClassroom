@@ -1,5 +1,3 @@
-import gui.GUIManager
-
 class DataBus {
     var guiManager: GUIManager? = null
     var serialManager: SerialManager? = null
