@@ -7,11 +7,10 @@ import gui.materialSwing.InscribedLabel
 import java.awt.*
 import java.lang.Exception
 import javax.swing.JComponent
-import javax.swing.JFrame
 import javax.swing.JPanel
 
-open class BasePanel(private val mainFrame: JFrame): GUIPanel() {
-    open var actionContent = arrayOf<String>()
+open class BasePanel(private val context: Context): GUIPanel() {
+    open var actionContent = arrayOf<Any>()
     open val titleText = ""
 
     override fun paint(g: Graphics?) {
@@ -26,7 +25,7 @@ open class BasePanel(private val mainFrame: JFrame): GUIPanel() {
         try { remove((layout as BorderLayout).getLayoutComponent(BorderLayout.NORTH))
         } catch (e: Exception) {}
 
-        val title = InscribedLabel(titleText.uppercase(), Fonts.TITLE, mainFrame.width - GUIConstants.sideFieldsWidth, GUIConstants.maxTitleHeight)
+        val title = InscribedLabel(titleText.uppercase(), Fonts.TITLE, context.mainFrame!!.width - GUIConstants.sideFieldsWidth, GUIConstants.maxTitleHeight)
         title.foreground = Palette.FOREGROUND
         val titlePanel = JPanel(FlowLayout(FlowLayout.LEFT))
         titlePanel.add(title)
@@ -38,6 +37,11 @@ open class BasePanel(private val mainFrame: JFrame): GUIPanel() {
         arrayOf(BorderLayout.CENTER, BorderLayout.WEST, BorderLayout.EAST, BorderLayout.SOUTH).forEach {
             try { remove((layout as BorderLayout).getLayoutComponent(it))
             } catch (e: Exception) {} }
+    }
+
+    override fun update() {
+        isVisible = false
+        isVisible = true
     }
 
     var listener: PanelActionListener = object : PanelActionListener {

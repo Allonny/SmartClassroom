@@ -34,6 +34,7 @@ class GUIConstants {
             Labels.SETTINGS to Icons.Foreground.SETTINGS,
             "${Labels.SETTINGS}_alt" to Icons.ForegroundAlt.SETTINGS
         )
+
         val menuButtonIcons = Icons(
             Integer.min(menuButtonsSize.width, menuButtonsSize.height),
             Labels.LIGHT to Icons.Foreground.LIGHT_ON,
@@ -41,8 +42,10 @@ class GUIConstants {
             Labels.POWER_SUPPLY to Icons.Foreground.POWER_SUPPLY,
             Labels.ADD_USER to Icons.Foreground.ADD_USER
         )
+
         val loginButtonIcon =
             Icons(Integer.min(loginButtonsSize.width, loginButtonsSize.height), Labels.LOGIN to Icons.ForegroundAlt.LOGIN)
+
         val settingsIcons = Icons(
             settingButtonSize.width,
             Labels.EXPAND to Icons.Foreground.EXPAND,
@@ -50,20 +53,30 @@ class GUIConstants {
             Labels.PORT_CONNECT to Icons.ForegroundAlt.SERIAL,
             Labels.SERIAL_LOG to Icons.ForegroundAlt.CONSOLE
         )
+
         val menuLightIcons = Icons(
             menuSwitchButtonSize.width,
-            Labels.SWITCH_ON to Icons.Foreground.LIGHT_ON,
-            Labels.SWITCH_OFF to Icons.Foreground.LIGHT_OFF
+            Labels.LIGHT_ON to Icons.Foreground.LIGHT_ON,
+            Labels.LIGHT_OFF to Icons.Foreground.LIGHT_OFF
         )
-        val expandedSettings: MutableMap<String, Boolean> = mutableMapOf(
-            Labels.SERIAL_LOG to false,
-            Labels.PORT_CONNECT to false
-        ).withDefault { false }
+
+        val menuWindowIcons = Icons(
+            menuSwitchButtonSize.width,
+            Labels.WINDOW_ON to Icons.Foreground.WINDOW_OPEN,
+            Labels.WINDOW_OFF to Icons.Foreground.WINDOW_CLOSE
+        )
+
+        val menuPowerSupplyIcons = Icons(
+            menuSwitchButtonSize.width,
+            Labels.POWER_SUPPLY_ON to Icons.Foreground.TOGGLE_ON,
+            Labels.POWER_SUPPLY_OFF to Icons.Foreground.TOGGLE_OFF
+        )
 
         val menusOptions: MutableMap<String, Array<String>> = mutableMapOf(
             Labels.BASIC to arrayOf(Labels.LIGHT, Labels.WINDOW),
             Labels.EXTENDED to arrayOf(Labels.LIGHT, Labels.WINDOW, Labels.POWER_SUPPLY),
-            Labels.ADMIN to arrayOf(Labels.LIGHT, Labels.WINDOW, Labels.POWER_SUPPLY, Labels.ADD_USER)
+            Labels.ADMIN to arrayOf(Labels.LIGHT, Labels.WINDOW, Labels.POWER_SUPPLY, Labels.ADD_USER),
+            Labels.FULL to arrayOf(Labels.LIGHT, Labels.WINDOW, Labels.POWER_SUPPLY, Labels.ADD_USER)
         ).withDefault { arrayOf() }
 
         var settings: MutableMap<String, Any> = mutableMapOf(

@@ -1,17 +1,15 @@
 package gui.panels
 
 import auxiliary.Fonts
-import auxiliary.Icons
 import auxiliary.Labels
 import auxiliary.Palette
 import gui.GUIConstants
 import gui.materialSwing.InscribedLabel
 import gui.materialSwing.MaterialButton
 import java.awt.*
-import java.lang.Exception
 import javax.swing.*
 
-class WelcomePanel(private val mainFrame: JFrame): BasePanel(mainFrame) {
+class WelcomePanel(private val context: Context): BasePanel(context) {
     override val titleText : String = Labels[Labels.WELCOME].description
 
     override fun setContent() {
@@ -19,9 +17,9 @@ class WelcomePanel(private val mainFrame: JFrame): BasePanel(mainFrame) {
 
         val text = Box(BoxLayout.Y_AXIS)
         Labels[Labels.MESSAGE].other.forEach {
-            val minHeight = mainFrame.height - GUIConstants.topPanelSize.height -
+            val minHeight = context.mainFrame!!.height - GUIConstants.topPanelSize.height -
                     (GUIConstants.loginButtonsSize.height + GUIConstants.loginButtonsInsets.top + GUIConstants.loginButtonsInsets.bottom)
-            val minWidth = mainFrame.width - GUIConstants.sideFieldsWidth
+            val minWidth = context.mainFrame!!.width - GUIConstants.sideFieldsWidth
             val maxSize = Integer.min(minWidth, minHeight)
             val line = InscribedLabel(it.value.toString(), Fonts.TITLE_ALT, maxSize, maxSize)
             line.foreground = Palette.DISABLE

@@ -10,7 +10,7 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.*
 
-class MenuPanel(private val mainFrame: JFrame, var buttonsInLine: Int = 2): BasePanel(mainFrame) {
+class MenuPanel(private val context: Context): BasePanel(context) {
     override val titleText: String = Labels[Labels.MENU].description
     override fun setContent() {
         super.setContent()
@@ -31,11 +31,11 @@ class MenuPanel(private val mainFrame: JFrame, var buttonsInLine: Int = 2): Base
             constraints.insets = GUIConstants.menuButtonsInsets
             constraints.weightx = 0.0
             constraints.gridwidth = 1
-            constraints.gridx = 1 + counter % buttonsInLine
-            constraints.gridy = counter / buttonsInLine
+            constraints.gridx = 1 + counter % context.buttonsInLine
+            constraints.gridy = counter / context.buttonsInLine
             counter++
 
-            val button = menuButton(it)
+            val button = menuButton(it as String)
             setSize(button, constraints, GUIConstants.menuButtonsSize)
             buttonPanel.add(button, constraints)
         }
@@ -44,7 +44,7 @@ class MenuPanel(private val mainFrame: JFrame, var buttonsInLine: Int = 2): Base
             constraints.gridy = i
             constraints.weightx = 1.0
             constraints.gridwidth = 1
-            for (j in arrayOf(0, buttonsInLine + 1)) {
+            for (j in arrayOf(0, context.buttonsInLine + 1)) {
                 val space = JLabel()
                 setSize(space, constraints, null)
                 constraints.gridx = j

@@ -7,6 +7,8 @@ abstract class GUIPanel: JPanel {
 
     abstract fun setContent()
 
+    abstract fun update()
+
     interface PanelActionListener {
         var action: (String?) -> Unit
             get() = action

@@ -1,7 +1,59 @@
-import gui.GUI
+import com.couchbase.lite.MutableDocument
+import gui.GUIManager
 
 fun main() {
-    val serialBus: SerialBus = SerialBus(19200, autoConnect = true)
+    System.setProperty("awt.useSystemAAFontSettings","on")
+    System.setProperty("swing.aatext", "true")
 
-    GUI(serialBus)
+    val dataBus: DataBus = DataBus()
+
+    val dbManager: DBManager = DBManager(dataBus)
+
+    //println( dbManager.addUser("user", "1234") )
+    //println( dbManager.getUser("user", password = "1234") )
+    //dbManager.removeUser("user", password = "1234")
+    //println( dbManager.getUser("user", "1234") )
+    //println( dbManager.getUser("abc", "123") )
+    //dbManager.database?.deleteCollection("users")
+
+    val serialManager: SerialManager = SerialManager(dataBus)
+    serialManager.serialSpeed = 19200
+    serialManager.autoConnect = true
+
+//    serialManager.addDataReceivedListener {
+//        if(SerialManager.LABEL_UID in it.keys) {
+//            val uid = serialManager.get(SerialManager.LABEL_UID)[SerialManager.LABEL_UID]
+//            println(uid)
+//            val user = dbManager.getUser(rfid = uid!!)
+//            println(user)
+//            if (user == null) {
+//                var login: String
+//                var password: String
+//                var name: String
+//                var privileges: Array<String>
+//                var newUser: MutableDocument? = MutableDocument()
+//                do {
+//                    if (newUser == null) println("Логин уже знаят")
+//                    print("Введите логин: ")
+//                    login = readln()
+//                    print("Введите пароль: ")
+//                    password = readln()
+//                    print("Введите имя: ")
+//                    name = readln()
+//                    print("Введите привилегии: ")
+//                    privileges = readln().split(' ').toTypedArray()
+//                    newUser = dbManager.addUser(
+//                        login = login,
+//                        password = password,
+//                        rfid = uid,
+//                        name = name,
+//                        privileges = privileges)
+//                } while (newUser == null)
+//                println("Пользователь добавлен")
+//            }
+//        }
+//    }
+
+
+    val guiManager: GUIManager = GUIManager(dataBus)
 }
