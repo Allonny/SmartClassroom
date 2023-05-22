@@ -4,17 +4,36 @@ import com.couchbase.lite.Collection
 
 
 class DBManager(val dataBus: DataBus) {
+    companion object {
+        const val dbLabel = "Terminal"
+        const val usersLabel = "users"
+        const val serialLabel = "serial"
+        const val settingsLabel = "settings"
+
+        const val idLabel = "id"
+        const val loginLabel = "login"
+        const val passwordLabel = "password"
+        const val rfidLabel = "rfid"
+        const val nameLabel = "name"
+
+        const val superuserKeyword = "superuser"
+
+        private const val defaultSuperuserLogin = "_superuser_"
+        private const val defaultSuperuserPassword = "superuser"
+
+        private const val statusNone: Int = 0
+        private const val statusInit: Int = 1
+        private const val statusDBCreated: Int = 2
+        private const val statusCollectionCreated: Int = 3
+        private const val statusDBGetted: Int = 4
+        private const val statusCollectinGetted: Int = 5
+    }
+
     var database: Database? = null
     var usersCollection: Collection? = null
     var serialCollection: Collection? = null
     var settingsCollection: Collection? = null
 
-    private val statusNone: Int = 0
-    private val statusInit: Int = 1
-    private val statusDBCreated: Int = 2
-    private val statusCollectionCreated: Int = 3
-    private val statusDBGetted: Int = 4
-    private val statusCollectinGetted: Int = 5
     private var status: Int = statusNone
 
     init {
@@ -26,21 +45,28 @@ class DBManager(val dataBus: DataBus) {
             println("База данных инициализированна.")
 
             status = statusDBCreated
-            database = Database("Terminal")
+            database = Database(dbLabel)
             println("База данных создана.")
 
             status = statusCollectionCreated
-            arrayOf("users", "serial", "settings").forEach {
+            arrayOf(usersLabel, serialLabel, settingsLabel).forEach {
                 if(database?.getCollection(it) == null) {
                     database?.createCollection(it)
                     println("Коллекция $it создана.")
+                    if(it == usersLabel) {
+                        val superuserDoc = MutableDocument()
+                            .setString(loginLabel, defaultSuperuserLogin)
+                            .setString(passwordLabel, Encrypt.sha256(defaultSuperuserPassword))
+                            .setBoolean(superuserKeyword, true)
+                        usersCollection?.save(superuserDoc)
+                    }
                 }
             }
 
             status = statusCollectinGetted
-            usersCollection = database?.getCollection("users")
-            serialCollection = database?.getCollection("serial")
-            settingsCollection = database?.getCollection("settings")
+            usersCollection = database?.getCollection(usersLabel)
+            serialCollection = database?.getCollection(serialLabel)
+            settingsCollection = database?.getCollection(settingsLabel)
             println("Все коллекции получены.")
 
         } catch (e: CouchbaseLiteException) {
@@ -63,14 +89,14 @@ class DBManager(val dataBus: DataBus) {
             if( QueryBuilder
                 .select(SelectResult.expression(Meta.id))
                 .from(DataSource.collection(usersCollection!!))
-                .where(Expression.property("login").equalTo(Expression.string(login)))
+                .where(Expression.property(loginLabel).equalTo(Expression.string(login)))
                 .execute().next() != null ) return null
 
             val userDoc = MutableDocument()
-                .setString("login", login)
-                .setString("password", Encrypt.sha256(password))
-                .setString("rfid", Encrypt.sha256(rfid))
-                .setString("name", name)
+                .setString(loginLabel, login)
+                .setString(passwordLabel, Encrypt.sha256(password))
+                .setString(rfidLabel, Encrypt.sha256(rfid))
+                .setString(nameLabel, name)
             privileges.forEach { userDoc.setBoolean(it, true) }
             usersCollection?.save(userDoc)
             return userDoc
@@ -83,26 +109,24 @@ class DBManager(val dataBus: DataBus) {
         val query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
-                SelectResult.property("password"),
-                SelectResult.property("rfid"))
+                SelectResult.property(passwordLabel),
+                SelectResult.property(rfidLabel))
             .from(DataSource.collection(usersCollection!!))
-            .where(Expression.property("login").equalTo(Expression.string(login)))
+            .where(Expression.property(loginLabel).equalTo(Expression.string(login)))
         val result = query.execute().next() ?: return null
-        return result.getString("id")?.let { id -> usersCollection?.getDocument(id) }
-//        if (password.isNotEmpty() and result.getString("password").equals(Encrypt.sha256(password)))
-//
-//        else return null
+        if (password.isEmpty() or ! result.getString(passwordLabel).equals(Encrypt.sha256(password))) return null
+        return result.getString(idLabel)?.let { id -> usersCollection?.getDocument(id) }
     }
 
     fun getUser(rfid: String): Document? {
         val query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
-                SelectResult.property("rfid"))
+                SelectResult.property(rfidLabel))
             .from(DataSource.collection(usersCollection!!))
-            .where(Expression.property("rfid").equalTo(Expression.string(Encrypt.sha256(rfid))))
+            .where(Expression.property(rfidLabel).equalTo(Expression.string(Encrypt.sha256(rfid))))
         val result = query.execute().next() ?: return null
-        return result.getString("id")?.let { id -> usersCollection?.getDocument(id) }
+        return result.getString(idLabel)?.let { id -> usersCollection?.getDocument(id) }
     }
 
     fun removeUser(login: String, password: String = "", rfid: String = "") {
@@ -110,13 +134,13 @@ class DBManager(val dataBus: DataBus) {
         val query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
-                SelectResult.property("password"),
-                SelectResult.property("rfid"))
+                SelectResult.property(passwordLabel),
+                SelectResult.property(rfidLabel))
             .from(DataSource.collection(usersCollection!!))
-            .where(Expression.property("login").equalTo(Expression.string(login)))
+            .where(Expression.property(loginLabel).equalTo(Expression.string(login)))
         val result = query.execute().next() ?: return
-        if (password.isNotEmpty() and result.getString("password").equals(Encrypt.sha256(password))
-            or rfid.isNotEmpty() and result.getString("rfid").equals(Encrypt.sha256(rfid)))
-            result.getString("id")?.let { id -> usersCollection?.getDocument(id) }?.let { doc -> usersCollection?.delete(doc) }
+        if (password.isNotEmpty() and result.getString(passwordLabel).equals(Encrypt.sha256(password))
+            or rfid.isNotEmpty() and result.getString(rfidLabel).equals(Encrypt.sha256(rfid)))
+            result.getString(idLabel)?.let { id -> usersCollection?.getDocument(id) }?.let { doc -> usersCollection?.delete(doc) }
     }
 }
