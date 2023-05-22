@@ -134,6 +134,9 @@ class GUIManager (val dataBus: DataBus) {
     }
 
     private fun authorisation(uid: String) {
+        if(currentSubTree == userTree) {
+            return
+        }
         val user = context.dbManager!!.getUser(uid)
         if(user == null) updateFrame(rootTree, force = true)
         else authorisation(user)

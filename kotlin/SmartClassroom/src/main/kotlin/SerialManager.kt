@@ -1,6 +1,9 @@
 import jssc.SerialPort
 import jssc.SerialPortException
 import jssc.SerialPortList
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import java.util.regex.Pattern
 import kotlin.Exception
@@ -318,18 +321,28 @@ class SerialManager (val dataBus: DataBus) {
         override val syncConfigListeners: MutableSet<(ArrayList<Pin>) -> Unit> = mutableSetOf()
         override var groupsUpdatedListeners: MutableSet<(Map<String, ArrayList<Pinstate>>) -> Unit> = mutableSetOf()
 
-        override var portFound: (String?) -> Unit = { value -> portFoundListeners.forEach { it(value) } }
+        override var portFound: (String?) -> Unit = { value ->
+                runBlocking { coroutineScope { portFoundListeners.forEach { launch { it(value) } } } }
+        }
             set(value) { portFoundListeners.add(value) }
-        override var dataReceived: (Map<String, String>) -> Unit = { value -> dataReceivedListeners.forEach { it(value) } }
+        override var dataReceived: (Map<String, String>) -> Unit = { value ->
+                runBlocking { coroutineScope { dataReceivedListeners.forEach { launch { it(value) } } } }
+        }
             set(value) { dataReceivedListeners.add(value) }
 
-        override var updateLog: (ArrayList<Pair<String, String>>) -> Unit = { value -> updateLogListeners.forEach { it(value) }}
+        override var updateLog: (ArrayList<Pair<String, String>>) -> Unit = { value ->
+                runBlocking { coroutineScope { updateLogListeners.forEach { launch { it(value) } } } }
+        }
             set(value) { updateLogListeners.add(value) }
 
-        override var syncConfig: (ArrayList<Pin>) -> Unit = { value -> syncConfigListeners.forEach { it(value) } }
+        override var syncConfig: (ArrayList<Pin>) -> Unit = { value ->
+                runBlocking { coroutineScope { syncConfigListeners.forEach { launch { it(value) } } } }
+            }
             set(value) { syncConfigListeners.add(value) }
 
-        override var groupsUpdated: (Map<String, ArrayList<Pinstate>>) -> Unit = { value -> groupsUpdatedListeners.forEach { it(value) } }
+        override var groupsUpdated: (Map<String, ArrayList<Pinstate>>) -> Unit = { value ->
+                runBlocking { coroutineScope { groupsUpdatedListeners.forEach { launch { it(value) } } } }
+            }
             set(value) { groupsUpdatedListeners.add(value) }
     }
 

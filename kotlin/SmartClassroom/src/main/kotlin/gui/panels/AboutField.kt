@@ -34,7 +34,7 @@ class AboutField(private val context: Context): FieldPanel() {
                     try {
                         Desktop.getDesktop().browse(URI(Labels[Labels.ABOUT].other[Labels.LINK] as String))
                     } catch (e: Exception) {
-                        Runtime.getRuntime().exec(arrayOf<String>("xdg-open", Labels[Labels.ABOUT].other[Labels.LINK] as String))
+                        Runtime.getRuntime().exec(arrayOf("xdg-open", Labels[Labels.ABOUT].other[Labels.LINK] as String))
                     }
                 }
 
