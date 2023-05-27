@@ -9,7 +9,7 @@ object Fonts {
     val TITLE_ALT: Font =
         Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Thin.ttf"""))
     val SUBTITLE: Font =
-        Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Bold.ttf"""))
+        Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Mont/Mont-Regular.ttf"""))
     val REGULAR: Font =
         Font.createFont(Font.TRUETYPE_FONT, File("""resources/fonts/Comfortaa/static/Comfortaa-Bold.ttf"""))
     val REGULAR_ALT: Font =

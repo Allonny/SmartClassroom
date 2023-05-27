@@ -6,13 +6,6 @@ fun main() {
 
     val dbManager: DBManager = DBManager(dataBus)
 
-    //println( dbManager.addUser("user", "1234") )
-    //println( dbManager.getUser("user", password = "1234") )
-    //dbManager.removeUser("user", password = "1234")
-    //println( dbManager.getUser("user", "1234") )
-    //println( dbManager.getUser("abc", "123") )
-    //dbManager.database?.deleteCollection("users")
-
     val serialManager: SerialManager = SerialManager(dataBus)
     serialManager.serialSpeed = 19200
     serialManager.autoConnect = true

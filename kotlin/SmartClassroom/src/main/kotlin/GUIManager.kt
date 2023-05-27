@@ -266,6 +266,9 @@ class GUIManager (val dataBus: DataBus) {
                 if (context.buttonsInLine != newButtonsInLine) {
                     context.buttonsInLine = newButtonsInLine
                     panelsForUpdate.add(Labels.USER)
+                    panelsForUpdate.add(Labels.LIGHT)
+                    panelsForUpdate.add(Labels.WINDOW)
+                    panelsForUpdate.add(Labels.POWER_SUPPLY)
                 }
 
                 setPanel(rootTree, include = panelsForUpdate.toTypedArray(), force = true)

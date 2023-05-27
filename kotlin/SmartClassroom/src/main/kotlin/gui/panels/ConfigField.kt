@@ -154,13 +154,13 @@ class ConfigField(private val context: Context): FieldPanel() {
             }
 
             val lightTitle = JLabel(Labels[Labels.CONFIG].other[Labels.LIGHT_GROUP] as String)
-            lightTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+            lightTitle.font = Fonts.REGULAR_ALT.deriveFont(25f)
 
             val windowTitle = JLabel(Labels[Labels.CONFIG].other[Labels.WINDOW_GROUP] as String)
-            windowTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+            windowTitle.font = Fonts.REGULAR_ALT.deriveFont(25f)
 
             val powerTitle = JLabel(Labels[Labels.CONFIG].other[Labels.POWER_SUPPLY_GROUP] as String)
-            powerTitle.font = Fonts.SUBTITLE.deriveFont(30f)
+            powerTitle.font = Fonts.REGULAR_ALT.deriveFont(25f)
 
             setPanel(lightPanel, SerialManager.LIGHT_ID)
             setPanel(windowPanel, SerialManager.WINDOW_ID)

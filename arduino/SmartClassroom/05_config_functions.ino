@@ -53,7 +53,7 @@ void config_map_export (void) {
   char config_line[pin_map_size * 2 + 1];
   char *shift = config_line;
   for(size_t i = 0; i < pin_map_size; i++) {
-    byte_to_hex(pin_map[i].type, shift);
+    byte_to_hex(pin_map[i].type, shift);UNASSIGNED_PIN
     shift += 2;    
   }
   *shift = '\0';

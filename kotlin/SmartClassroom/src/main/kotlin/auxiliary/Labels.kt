@@ -51,6 +51,7 @@ class Labels {
         const val SEARCH = "search"
         const val FOUND = "found"
         const val NOT_FOUND = "not_found"
+        const val SLIDER = "slider"
         const val OFF = "_off"
         const val ON = "_on"
         const val SWITCH = "switch"
@@ -106,7 +107,7 @@ class Labels {
                     1 to "Приложите,",
                     2 to "пожалуйста,",
                     3 to "свою карточку",
-                    4 to "к сканнеру (=^ω^=)"
+                    4 to "к сканеру (=^ω^=)"
                 )
             ),
             EXPAND to TextField("Раскрыть"),

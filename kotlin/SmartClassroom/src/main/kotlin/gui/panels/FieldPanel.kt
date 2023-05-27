@@ -39,15 +39,19 @@ open class FieldPanel: GUIPanel() {
         constraints.insets = GUIConstants.settingsFieldInsets
 
         constraints.gridx = 0
+        constraints.weightx = 0.0
+        constraints.weighty = 1.0
         setSize(titleIcon, constraints, GUIConstants.settingButtonSize)
         titlePanel.add(titleIcon, constraints)
 
         constraints.gridx = 1
+        constraints.weightx = 0.0
+        constraints.weighty = 1.0
         val title = JLabel(titleText)
         title.foreground = Palette.FOREGROUND
-        title.font = Fonts.REGULAR_ALT
-        title.font = title.font.deriveFont(25f)
-        setSize(title, constraints, null)
+        title.font = Fonts.SUBTITLE
+        title.font = title.font.deriveFont(30f)
+        setSize(title, constraints, GUIConstants.settingLabelSize)
         titlePanel.add(title, constraints)
 
         val expandButton = MaterialButton()
@@ -61,6 +65,8 @@ open class FieldPanel: GUIPanel() {
         expandButton.addActionListener { this.listener.action(if (isExpanded) Labels.COLLAPSE else Labels.EXPAND) }
 
         constraints.gridx = 2
+        constraints.weightx = 0.0
+        constraints.weighty = 1.0
         setSize(expandButton, constraints, GUIConstants.settingButtonSize)
         titlePanel.add(expandButton, constraints)
 

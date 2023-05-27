@@ -61,9 +61,9 @@ class LightPanel(private val context: Context): BasePanel(context) {
             val lightSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 255))
             lightSlider.sliderBackgroundLineColor = Palette.DISABLE
             lightSlider.sliderForegroundLineColor = Palette.ACCENT_NORMAL
-            lightSlider.thumbColor = Palette.ACCENT_HIGH
-//            lightSlider.thumbIcon = ImageIcon(menuLightIcons[Auxiliary.Labels.SWITCH_ON]?.image?.getScaledInstance(35, 35, Image.SCALE_SMOOTH))
-            lightSlider.preferredSize = Dimension(300, 50)
+            lightSlider.thumbColor = Palette.ACCENT_NORMAL
+            lightSlider.thumbIcon = GUIConstants.menuLightIcons[Labels.SLIDER]
+            lightSlider.preferredSize = GUIConstants.fieldSliderSize
             lightSlider.background = Palette.BACKGROUND_ALT
 
             val switchButton = MaterialButton()
@@ -111,10 +111,15 @@ class LightPanel(private val context: Context): BasePanel(context) {
             setSize(switchButton, groupConstraints, GUIConstants.menuSwitchButtonSize)
             groupPanel.add(switchButton, groupConstraints)
 
+            groupConstraints.gridy = 2
             if (type and SerialManager.PWM_PIN == SerialManager.PWM_PIN) {
-                groupConstraints.gridy = 2
                 setSize(lightSlider, groupConstraints, null)
                 groupPanel.add(lightSlider, groupConstraints)
+            } else {
+                val space = JLabel()
+                space.preferredSize = GUIConstants.fieldSliderSize
+                setSize(space, groupConstraints, null)
+                groupPanel.add(space, groupConstraints)
             }
 
             setSize(groupPanel, constraints, GUIConstants.menuFieldSize)

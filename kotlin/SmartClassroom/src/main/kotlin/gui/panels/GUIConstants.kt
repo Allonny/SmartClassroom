@@ -20,9 +20,11 @@ class GUIConstants {
         val settingsFieldSize = Dimension(800, 100)
         val settingsFieldInsets = Insets(10, 10, 10, 10)
         val settingButtonSize = Dimension(50, 50)
+        val settingLabelSize = Dimension(600, 50)
         val settingTerminalSize = Dimension(800, 500)
         val settingAboutSize = Dimension(100, 300)
         val settingTerminalRecordInsets = Insets(10, 10, 10, 10)
+        val fieldSliderSize = Dimension(300, 50)
         val buttonCornerRadius = 50
         val scrollSpeed = 10
         val sideFieldsWidth = 150
@@ -55,12 +57,14 @@ class GUIConstants {
             Labels.SERIAL_LOG to Icons.ForegroundAlt.CONSOLE,
             Labels.CONFIG to Icons.ForegroundAlt.CONFIG,
             Labels.ABOUT to Icons.ForegroundAlt.INFO
+
         )
 
         val menuLightIcons = Icons(
             menuSwitchButtonSize.width,
             Labels.LIGHT_ON to Icons.Foreground.LIGHT_ON,
-            Labels.LIGHT_OFF to Icons.Foreground.LIGHT_OFF
+            Labels.LIGHT_OFF to Icons.Foreground.LIGHT_OFF,
+            Labels.SLIDER to Icons.ForegroundAlt.CIRCLE
         )
 
         val menuWindowIcons = Icons(
