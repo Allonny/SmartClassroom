@@ -60,8 +60,10 @@ class LightPanel(private val context: Context): BasePanel(context) {
 
             val lightSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 255))
             lightSlider.sliderBackgroundLineColor = Palette.DISABLE
-            lightSlider.sliderForegroundLineColor = Palette.ACCENT_NORMAL
-            lightSlider.thumbColor = Palette.ACCENT_NORMAL
+            lightSlider.sliderForegroundLineMinColor = Palette.ACCENT_NORMAL
+            lightSlider.sliderForegroundLineMaxColor = Palette.ACCENT_HIGH
+            lightSlider.thumbMinColor = Palette.ACCENT_NORMAL
+            lightSlider.thumbMaxColor = Palette.ACCENT_HIGH
             lightSlider.thumbIcon = GUIConstants.menuLightIcons[Labels.SLIDER]
             lightSlider.preferredSize = GUIConstants.fieldSliderSize
             lightSlider.background = Palette.BACKGROUND_ALT
@@ -75,9 +77,11 @@ class LightPanel(private val context: Context): BasePanel(context) {
 
             fun stateButton(state: Boolean) {
                 if (state) {
+                    switchButton.backgroundColor = Palette.ACCENT_HIGH
                     switchButton.enableFaceTitle = Labels[Labels.LIGHT_GROUP].other[Labels.LIGHT_OFF] as String
                     switchButton.enableFaceIcon = GUIConstants.menuLightIcons[Labels.LIGHT_ON]
                 } else {
+                    switchButton.backgroundColor = Palette.ACCENT_NORMAL
                     switchButton.enableFaceTitle = Labels[Labels.LIGHT_GROUP].other[Labels.LIGHT_ON] as String
                     switchButton.enableFaceIcon = GUIConstants.menuLightIcons[Labels.LIGHT_OFF]
                 }

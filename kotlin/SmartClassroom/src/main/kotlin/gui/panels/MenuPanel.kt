@@ -59,7 +59,7 @@ class MenuPanel(private val context: Context): BasePanel(context) {
             Labels.LIGHT -> icon = GUIConstants.menuButtonIcons[Labels.LIGHT]
             Labels.WINDOW -> icon = GUIConstants.menuButtonIcons[Labels.WINDOW]
             Labels.POWER_SUPPLY -> icon = GUIConstants.menuButtonIcons[Labels.POWER_SUPPLY]
-            Labels.ADD_USER -> icon = GUIConstants.menuButtonIcons[Labels.ADD_USER]
+            Labels.USER_CONTROL -> icon = GUIConstants.menuButtonIcons[Labels.USER_CONTROL]
         }
 
         val button = MaterialButton(Labels[name].title, icon)

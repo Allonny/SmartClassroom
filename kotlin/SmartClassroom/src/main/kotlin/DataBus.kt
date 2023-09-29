@@ -1,4 +1,4 @@
-class DataBus {
+object DataBus {
     var guiManager: GUIManager? = null
     var serialManager: SerialManager? = null
     var networkManager: NetworkManager? = null

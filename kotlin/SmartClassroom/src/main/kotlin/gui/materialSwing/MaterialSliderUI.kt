@@ -7,6 +7,7 @@ import java.awt.geom.RoundRectangle2D
 import javax.swing.ImageIcon
 import javax.swing.JSlider
 import javax.swing.plaf.basic.BasicSliderUI
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -52,15 +53,103 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
             setDecor()
         }
 
-    var sliderForegroundLineColor: Color = Color.BLUE
+    var sliderForegroundLineColor: Color? = Color.BLUE
         set(value) {
-            field = value
+            if(value != null) {
+                sliderForegroundLineMinColor = value
+                sliderForegroundLineMaxColor = value
+                field = value
+            } else {
+                val pos = (slider.value.toFloat() - slider.minimum.toFloat()) / (slider.maximum.toFloat() - slider.minimum.toFloat())
+                val minHSB: FloatArray = floatArrayOf(0f, 0f, 0f, 0f)
+                val maxHSB: FloatArray = floatArrayOf(0f, 0f, 0f, 0f)
+                Color.RGBtoHSB(
+                    sliderForegroundLineMinColor.red,
+                    sliderForegroundLineMinColor.green,
+                    sliderForegroundLineMinColor.blue,
+                    minHSB
+                )
+                Color.RGBtoHSB(
+                    sliderForegroundLineMaxColor.red,
+                    sliderForegroundLineMaxColor.green,
+                    sliderForegroundLineMaxColor.blue,
+                    maxHSB
+                )
+
+                val hue = minHSB[0] + (maxHSB[0] - minHSB[0]) * pos
+                val saturation = minHSB[1] + (maxHSB[1] - minHSB[1]) * pos
+                val brightness = minHSB[2] + (maxHSB[2] - minHSB[2]) * pos
+
+                field = Color.getHSBColor(
+                    (hue % 1f + 1f) % 1f,
+                    (saturation % 1f + 1f) % 1f,
+                    (brightness % 1f + 1f) % 1f
+                )
+            }
             setDecor()
         }
 
-    var thumbColor: Color = Color.CYAN
+    var sliderForegroundLineMinColor: Color = Color.BLUE
         set(value) {
             field = value
+            sliderForegroundLineColor = null
+            setDecor()
+        }
+
+    var sliderForegroundLineMaxColor: Color = Color.BLUE
+        set(value) {
+            field = value
+            sliderForegroundLineColor = null
+            setDecor()
+        }
+
+    var thumbColor: Color? = Color.CYAN
+        set(value) {
+            if(value != null) {
+                thumbMinColor = value
+                thumbMaxColor = value
+                field = value
+            } else {
+                val pos = (slider.value.toFloat() - slider.minimum.toFloat()) / (slider.maximum.toFloat() - slider.minimum.toFloat())
+                val minHSB: FloatArray = floatArrayOf(0f, 0f, 0f, 0f)
+                val maxHSB: FloatArray = floatArrayOf(0f, 0f, 0f, 0f)
+                Color.RGBtoHSB(
+                    thumbMinColor.red,
+                    thumbMinColor.green,
+                    thumbMinColor.blue,
+                    minHSB
+                )
+                Color.RGBtoHSB(
+                    thumbMaxColor.red,
+                    thumbMaxColor.green,
+                    thumbMaxColor.blue,
+                    maxHSB
+                )
+
+                val hue = minHSB[0] + (maxHSB[0] - minHSB[0]) * pos
+                val saturation = minHSB[1] + (maxHSB[1] - minHSB[1]) * pos
+                val brightness = minHSB[2] + (maxHSB[2] - minHSB[2]) * pos
+
+                field = Color.getHSBColor(
+                    (hue % 1f + 1f) % 1f,
+                    (saturation % 1f + 1f) % 1f,
+                    (brightness % 1f + 1f) % 1f
+                )
+            }
+            setDecor()
+        }
+
+    var thumbMinColor: Color = Color.CYAN
+        set(value) {
+            field = value
+            thumbColor = null
+            setDecor()
+        }
+
+    var thumbMaxColor: Color = Color.CYAN
+        set(value) {
+            field = value
+            thumbColor = null
             setDecor()
         }
 
@@ -136,6 +225,7 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
 
         if (isThumbPaint) {
             val thumbShape: Shape = createThumbShape(thumbRect.width.toDouble(), thumbRect.height.toDouble())
+            thumbColor = null
             g2d.color = thumbColor
             g2d.fill(thumbShape)
 
@@ -170,6 +260,7 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
             }
 
             if (isForegroundPaint) {
+                sliderForegroundLineColor = null
                 g2d.color = sliderForegroundLineColor
                 g2d.fillRoundRect(
                     - (shift + foregroundThickness) / 2,
@@ -193,6 +284,7 @@ class MaterialSliderUI(c: JSlider?) : BasicSliderUI() {
             }
 
             if (isForegroundPaint) {
+                sliderForegroundLineColor = null
                 g2d.color = sliderForegroundLineColor
                 g2d.fillRoundRect(
                     (trackRect.width - foregroundThickness) / 2,

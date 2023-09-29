@@ -6,9 +6,9 @@ import com.couchbase.lite.Collection
 class DBManager(val dataBus: DataBus) {
     companion object {
         const val dbLabel = "Terminal"
-        const val usersLabel = "users"
-        const val serialLabel = "serial"
-        const val settingsLabel = "settings"
+        const val usersLabel = "Users"
+        const val serialLabel = "Serial"
+        const val settingsLabel = "Settings"
 
         const val idLabel = "id"
         const val loginLabel = "login"
@@ -18,7 +18,7 @@ class DBManager(val dataBus: DataBus) {
 
         const val superuserKeyword = "superuser"
 
-        private const val defaultSuperuserLogin = "_superuser_"
+        private const val defaultSuperuserLogin = "_su_"
         private const val defaultSuperuserPassword = "superuser"
 
         private const val statusNone: Int = 0
@@ -30,9 +30,12 @@ class DBManager(val dataBus: DataBus) {
     }
 
     var database: Database? = null
-    var usersCollection: Collection? = null
-    var serialCollection: Collection? = null
-    var settingsCollection: Collection? = null
+    val usersCollection: Collection?
+        get() = database?.getCollection(usersLabel)
+    val serialCollection: Collection?
+        get() = database?.getCollection(serialLabel)
+    val settingsCollection: Collection?
+        get() = database?.getCollection(settingsLabel)
 
     private var status: Int = statusNone
 
@@ -54,19 +57,12 @@ class DBManager(val dataBus: DataBus) {
                     database?.createCollection(it)
                     println("Коллекция $it создана.")
                     if(it == usersLabel) {
-                        val superuserDoc = MutableDocument()
-                            .setString(loginLabel, defaultSuperuserLogin)
-                            .setString(passwordLabel, Encrypt.sha256(defaultSuperuserPassword))
-                            .setBoolean(superuserKeyword, true)
-                        usersCollection?.save(superuserDoc)
+                        addUser(defaultSuperuserLogin, defaultSuperuserPassword, privileges = arrayOf(superuserKeyword))
                     }
                 }
             }
 
             status = statusCollectinGetted
-            usersCollection = database?.getCollection(usersLabel)
-            serialCollection = database?.getCollection(serialLabel)
-            settingsCollection = database?.getCollection(settingsLabel)
             println("Все коллекции получены.")
 
         } catch (e: CouchbaseLiteException) {
@@ -142,5 +138,21 @@ class DBManager(val dataBus: DataBus) {
         if (password.isNotEmpty() and result.getString(passwordLabel).equals(Encrypt.sha256(password))
             or rfid.isNotEmpty() and result.getString(rfidLabel).equals(Encrypt.sha256(rfid)))
             result.getString(idLabel)?.let { id -> usersCollection?.getDocument(id) }?.let { doc -> usersCollection?.delete(doc) }
+    }
+
+    fun getAllUsers() : List<Document> {
+        val userList = ArrayList<Document>()
+
+        val query = QueryBuilder
+            .select(SelectResult.expression(Meta.id))
+            .from(DataSource.collection(usersCollection!!))
+        val result = query.execute().allResults()
+        result.forEach {
+            userList.add(it.getString(idLabel)?.
+                let { id -> usersCollection?.getDocument(id) }?.
+                let { doc -> doc.toMutable().remove(passwordLabel).remove(rfidLabel) } as Document)
+        }
+
+        return userList.toList()
     }
 }

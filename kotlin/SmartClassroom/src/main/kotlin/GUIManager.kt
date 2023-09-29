@@ -12,23 +12,23 @@ import java.util.ArrayList
 import javax.swing.*
 
 
-class GUIManager (val dataBus: DataBus) {
-    val context: Context = Context()
-
+class GUIManager (dataBus: DataBus) {
     val mainFrame: JFrame = JFrame(Labels.TITLE)
 
-    private val topPanel: TopPanel = TopPanel(context)
-    private val welcomePanel: BasePanel = WelcomePanel(context)
-    private val loginPanel: BasePanel = LoginPanel(context)
-    private val powerMenuPanel: BasePanel = BasePanel(context)
-    private val menuPanel: BasePanel = MenuPanel(context)
-    private val settingsRootPanel: BasePanel = SettingsPanel(context)
-    private val settingsUserPanel: BasePanel = SettingsPanel(context)
+    private val topPanel: TopPanel = TopPanel(Context)
+    private val welcomePanel: BasePanel = WelcomePanel(Context)
+    private val loginPanel: BasePanel = LoginPanel(Context)
+    private val powerMenuPanel: BasePanel = BasePanel(Context)
+    private val menuPanel: BasePanel = MenuPanel(Context)
+    private val settingsRootPanel: BasePanel = SettingsPanel(Context)
+    private val settingsUserPanel: BasePanel = SettingsPanel(Context)
 
-    private val lightPanel: BasePanel = LightPanel(context)
-    private val windowPanel: BasePanel = WindowPanel(context)
-    private val powerSupplyPanel: BasePanel = PowerSupplyPanel(context)
-//    private val addUserPanel: JPanel = JPanel(BorderLayout())
+    private val lightPanel: BasePanel = LightPanel(Context)
+    private val windowPanel: BasePanel = WindowPanel(Context)
+    private val powerSupplyPanel: BasePanel = PowerSupplyPanel(Context)
+    private val userControlPanel: BasePanel = UserControlPanel(Context)
+    private val userAddPanel: BasePanel = UserAddPanel(Context)
+    private val userEditPanel: BasePanel = UserEditPanel(Context)
 
     private val rootTree: TreeNode<BasePanel> = TreeNode(Labels.ROOT, welcomePanel)
     private val userTree: TreeNode<BasePanel> = TreeNode(Labels.USER, menuPanel)
@@ -38,14 +38,15 @@ class GUIManager (val dataBus: DataBus) {
     private fun grubPanelAction(action: String?) {
         when (action?.substringBefore('.')) {
             Labels.LOGIN -> updateFrame(rootTree[Labels.LOGIN])
-            Labels.ENTER -> authorisation((loginPanel as LoginPanel).login, (loginPanel as LoginPanel).password)
-            Labels.SETTINGS -> updateFrame(context.currentPanel!![Labels.SETTINGS])
+            Labels.ENTER -> authorisation((loginPanel as LoginPanel).login, (loginPanel).password)
+            Labels.SETTINGS -> updateFrame(Context.currentPanel!![Labels.SETTINGS])
             Labels.POWER_MENU -> updateFrame(rootTree[Labels.POWER_MENU])
-            Labels.BACK -> updateFrame(context.currentPanel!!.parent)
+            Labels.BACK -> updateFrame(Context.currentPanel!!.parent)
             Labels.UPDATE -> updateFrame()
-            Labels.LIGHT -> updateFrame(context.currentPanel!![Labels.LIGHT])
-            Labels.WINDOW -> updateFrame(context.currentPanel!![Labels.WINDOW])
-            Labels.POWER_SUPPLY -> updateFrame(context.currentPanel!![Labels.POWER_SUPPLY])
+            Labels.LIGHT -> updateFrame(Context.currentPanel!![Labels.LIGHT])
+            Labels.WINDOW -> updateFrame(Context.currentPanel!![Labels.WINDOW])
+            Labels.POWER_SUPPLY -> updateFrame(Context.currentPanel!![Labels.POWER_SUPPLY])
+            Labels.USER_CONTROL -> updateFrame(Context.currentPanel!![Labels.USER_CONTROL])
             Labels.LIGHT_GROUP -> funcGroupControl(action)
             Labels.WINDOW_GROUP -> funcGroupControl(action)
             Labels.POWER_SUPPLY_GROUP -> funcGroupControl(action)
@@ -55,14 +56,14 @@ class GUIManager (val dataBus: DataBus) {
     private fun funcGroupControl(action: String) {
         val instruction = action.split('.')
         when (instruction[0]) {
-            Labels.LIGHT_GROUP -> context.serialManager!!.send(SerialManager.LABEL_LIGHT to instruction[1])
-            Labels.WINDOW_GROUP -> context.serialManager!!.send(SerialManager.LABEL_WINDOW to instruction[1])
-            Labels.POWER_SUPPLY_GROUP -> context.serialManager!!.send(SerialManager.LABEL_POWER_SUPPLY to instruction[1])
+            Labels.LIGHT_GROUP -> Context.serialManager!!.send(SerialManager.LABEL_LIGHT to instruction[1])
+            Labels.WINDOW_GROUP -> Context.serialManager!!.send(SerialManager.LABEL_WINDOW to instruction[1])
+            Labels.POWER_SUPPLY_GROUP -> Context.serialManager!!.send(SerialManager.LABEL_POWER_SUPPLY to instruction[1])
         }
     }
 
     private fun grabSerialBus() {
-        context.serialManager!!.addDataReceivedListener {
+        Context.serialManager!!.addDataReceivedListener {
             it.forEach { (param, value) ->
                 when (param) {
                     SerialManager.LABEL_SYSTEM -> println("$param - $value")
@@ -70,7 +71,7 @@ class GUIManager (val dataBus: DataBus) {
                     SerialManager.LABEL_ERROR -> println("$param - $value")
                     SerialManager.LABEL_CONFIG -> println("$param - $value")
                     SerialManager.LABEL_MAP -> println("$param - $value")
-                    SerialManager.LABEL_UID -> authorisation(uid = context.serialManager!!.get(SerialManager.LABEL_UID)!!)
+                    SerialManager.LABEL_UID -> authorisation(uid = Context.serialManager!!.get(SerialManager.LABEL_UID)!!)
                     SerialManager.LABEL_LIGHT -> println("$param - $value")
                     SerialManager.LABEL_WINDOW -> println("$param - $value")
                     SerialManager.LABEL_POWER_SUPPLY -> println("$param - $value")
@@ -79,27 +80,27 @@ class GUIManager (val dataBus: DataBus) {
                     SerialManager.LABEL_LOAD -> println("$param - $value")
                 }
             }
-            context.serialManager!!.remove()
+            Context.serialManager!!.remove()
         }
 
-        context.serialManager!!.addPortFoundListener {
+        Context.serialManager!!.addPortFoundListener {
             settingsRootPanel.update()
             settingsUserPanel.update()
 
             println("Найден $it")
         }
 
-        context.serialManager!!.addUpdateLogListener {
+        Context.serialManager!!.addUpdateLogListener {
             settingsRootPanel.update()
             settingsUserPanel.update()
         }
 
-        context.serialManager!!.addSyncConfigListener {
+        Context.serialManager!!.addSyncConfigListener {
             println("Pinmap")
             println(it)
         }
 
-        context.serialManager!!.addGroupsUpdatedListener {
+        Context.serialManager!!.addGroupsUpdatedListener {
             println("Funcgroups")
             println(it)
 
@@ -119,8 +120,8 @@ class GUIManager (val dataBus: DataBus) {
 
     private fun authorisation(user: Document) {
         val options = ArrayList<String>()
-        if (user.getValue(Labels.SUPER_USER) != null) options.addAll(GUIConstants.menusOptions[Labels.FULL]!!)
-        else GUIConstants.menusOptions[Labels.FULL]?.forEach { if (user.getValue(it) != null) options.add(it) }
+        if (user.getBoolean(DBManager.superuserKeyword)) options.addAll(GUIConstants.menusOptions[Labels.FULL]!!)
+        else GUIConstants.menusOptions[Labels.FULL]?.forEach { if (user.getBoolean(it)) options.add(it) }
 
         menuPanel.actionContent = options.toTypedArray()
         setPanel(userTree)
@@ -128,7 +129,7 @@ class GUIManager (val dataBus: DataBus) {
     }
 
     private fun authorisation(login: String, password: String) {
-        val user = context.dbManager!!.getUser(login, password)
+        val user = Context.dbManager!!.getUser(login, password)
         if(user == null) updateFrame(rootTree, force = true)
         else authorisation(user)
     }
@@ -137,14 +138,14 @@ class GUIManager (val dataBus: DataBus) {
         if(currentSubTree == userTree) {
             return
         }
-        val user = context.dbManager!!.getUser(uid)
+        val user = Context.dbManager!!.getUser(uid)
         if(user == null) updateFrame(rootTree, force = true)
         else authorisation(user)
     }
 
-    private fun updateFrame(newCurrentPanel: TreeNode<BasePanel> = context.currentPanel!!, force: Boolean = false) {
+    private fun updateFrame(newCurrentPanel: TreeNode<BasePanel> = Context.currentPanel!!, force: Boolean = false) {
         mainFrame.contentPane.isVisible = false
-        if (newCurrentPanel != context.currentPanel!! || force) {
+        if (newCurrentPanel != Context.currentPanel!! || force) {
 
             if (currentSubTree.name == Labels.ROOT && newCurrentPanel.name == Labels.USER ||
                 newCurrentPanel.name == Labels.ROOT && currentSubTree.name == Labels.USER
@@ -153,12 +154,12 @@ class GUIManager (val dataBus: DataBus) {
                 setPanel(currentSubTree)
             }
 
-            context.currentPanel = newCurrentPanel
+            Context.currentPanel = newCurrentPanel
             mainFrame.contentPane.removeAll()
             topPanel.setContent()
             mainFrame.contentPane.add(BorderLayout.NORTH, topPanel)
-            mainFrame.contentPane.add(BorderLayout.CENTER, context.currentPanel!!.value)
-            mainFrame.title = Labels[Labels.NAME].title + " | " + Labels[context.currentPanel!!.name].titleAlt
+            mainFrame.contentPane.add(BorderLayout.CENTER, Context.currentPanel!!.value)
+            mainFrame.title = Labels[Labels.NAME].title + " | " + Labels[Context.currentPanel!!.name].titleAlt
         }
         mainFrame.contentPane.isVisible = true
         mainFrame.isVisible = true
@@ -175,11 +176,10 @@ class GUIManager (val dataBus: DataBus) {
         }
 
         fun drawContent(panel: TreeNode<BasePanel>) {
-            var scrollPosition = 0
-            panel.value.components.forEach {
-                if (it.javaClass.name.contains("JScrollPane")) scrollPosition =
-                    (it as JScrollPane).verticalScrollBar.value
-            }
+//            panel.value.components.forEach {
+//                if (it.javaClass.name.contains("JScrollPane")) scrollPosition =
+//                    (it as JScrollPane).verticalScrollBar.value
+//            }
             panel.value.setContent()
         }
 
@@ -221,10 +221,10 @@ class GUIManager (val dataBus: DataBus) {
     init {
         dataBus.guiManager = this
 
-        context.serialManager = dataBus.serialManager
-        context.dbManager = dataBus.dbManager
-        context.mainFrame = mainFrame
-        context.currentPanel = rootTree
+        Context.serialManager = dataBus.serialManager
+        Context.dbManager = dataBus.dbManager
+        Context.mainFrame = mainFrame
+        Context.currentPanel = rootTree
 
         grabSerialBus()
 
@@ -240,7 +240,13 @@ class GUIManager (val dataBus: DataBus) {
             Labels.SETTINGS to settingsUserPanel,
             Labels.LIGHT to lightPanel,
             Labels.WINDOW to windowPanel,
-            Labels.POWER_SUPPLY to powerSupplyPanel
+            Labels.POWER_SUPPLY to powerSupplyPanel,
+            Labels.USER_CONTROL to userControlPanel
+        )
+
+        userTree[Labels.USER_CONTROL].addChildren(
+            Labels.USER_ADD to userAddPanel,
+            Labels.USER_EDIT to userEditPanel
         )
 
         topPanel.addActionListener { action -> grubPanelAction(action) }
@@ -251,20 +257,20 @@ class GUIManager (val dataBus: DataBus) {
         windowPanel.addActionListener { action -> grubPanelAction(action) }
         powerSupplyPanel.addActionListener { action -> grubPanelAction(action) }
 
-        lightPanel.actionContent = context.serialManager!!.funcGroups[SerialManager.LABEL_LIGHT]!!.toTypedArray()
-        windowPanel.actionContent = context.serialManager!!.funcGroups[SerialManager.LABEL_WINDOW]!!.toTypedArray()
-        powerSupplyPanel.actionContent = context.serialManager!!.funcGroups[SerialManager.LABEL_POWER_SUPPLY]!!.toTypedArray()
+        lightPanel.actionContent = Context.serialManager!!.funcGroups[SerialManager.LABEL_LIGHT]!!.toTypedArray()
+        windowPanel.actionContent = Context.serialManager!!.funcGroups[SerialManager.LABEL_WINDOW]!!.toTypedArray()
+        powerSupplyPanel.actionContent = Context.serialManager!!.funcGroups[SerialManager.LABEL_POWER_SUPPLY]!!.toTypedArray()
         settingsRootPanel.actionContent = arrayOf(Labels.PORT_CONNECT, Labels.SERIAL_LOG, Labels.CONFIG, Labels.ABOUT)
         settingsUserPanel.actionContent = arrayOf(Labels.PORT_CONNECT, Labels.SERIAL_LOG, Labels.CONFIG, Labels.ABOUT)
 
-        context.currentPanel = rootTree
+        Context.currentPanel = rootTree
 
         mainFrame.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(componentEvent: ComponentEvent?) {
                 val panelsForUpdate = arrayListOf(Labels.TITLE, Labels.ROOT)
                 val newButtonsInLine = max((mainFrame.width - 2 * GUIConstants.sideFieldsWidth) / GUIConstants.menuButtonsSize.width, 1)
-                if (context.buttonsInLine != newButtonsInLine) {
-                    context.buttonsInLine = newButtonsInLine
+                if (Context.buttonsInLine != newButtonsInLine) {
+                    Context.buttonsInLine = newButtonsInLine
                     panelsForUpdate.add(Labels.USER)
                     panelsForUpdate.add(Labels.LIGHT)
                     panelsForUpdate.add(Labels.WINDOW)

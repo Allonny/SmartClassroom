@@ -27,17 +27,33 @@ class MaterialSlider(brm: BoundedRangeModel) : JSlider() {
         get() = materialUI.thumbRelativeLength
         set(value) { materialUI.thumbRelativeLength= value }
 
-    var sliderForegroundLineColor: Color
-        get() = materialUI.sliderForegroundLineColor
-        set(value) { materialUI.sliderForegroundLineColor = value }
-
     var sliderBackgroundLineColor: Color
         get() = materialUI.sliderBackgroundLineColor
         set(value) { materialUI.sliderBackgroundLineColor = value }
 
+    var sliderForegroundLineColor: Color
+        get() = materialUI.sliderForegroundLineColor!!
+        set(value) { materialUI.sliderForegroundLineColor = value }
+
+    var sliderForegroundLineMinColor: Color
+        get() = materialUI.sliderForegroundLineMinColor
+        set(value) { materialUI.sliderForegroundLineMinColor = value }
+
+    var sliderForegroundLineMaxColor: Color
+        get() = materialUI.sliderForegroundLineMaxColor
+        set(value) { materialUI.sliderForegroundLineMaxColor = value }
+
     var thumbColor: Color
-        get() = materialUI.thumbColor
+        get() = materialUI.thumbColor!!
         set(value) { materialUI.thumbColor = value }
+
+    var thumbMinColor: Color
+        get() = materialUI.thumbMinColor
+        set(value) { materialUI.thumbMinColor = value }
+
+    var thumbMaxColor: Color
+        get() = materialUI.thumbMaxColor
+        set(value) { materialUI.thumbMaxColor = value }
 
     var thumbIcon: ImageIcon?
         get() = materialUI.thumbIcon
@@ -62,4 +78,3 @@ class MaterialSlider(brm: BoundedRangeModel) : JSlider() {
         super.setUI(materialUI)
     }
 }
-

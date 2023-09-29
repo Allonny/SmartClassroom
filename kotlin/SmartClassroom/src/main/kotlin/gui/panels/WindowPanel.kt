@@ -8,7 +8,6 @@ import gui.materialSwing.MaterialButton
 import gui.materialSwing.MaterialSlider
 import gui.materialSwing.RoundedBorder
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseAdapter
@@ -60,13 +59,15 @@ class WindowPanel(private val context: Context): BasePanel(context) {
             val value = pin.state
             var stateBool = value != 0
 
-            val lightSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 255))
-            lightSlider.sliderBackgroundLineColor = Palette.DISABLE
-            lightSlider.sliderForegroundLineColor = Palette.ACCENT_NORMAL
-            lightSlider.thumbColor = Palette.ACCENT_HIGH
-//            lightSlider.thumbIcon = ImageIcon(menuLightIcons[Auxiliary.Labels.SWITCH_ON]?.image?.getScaledInstance(35, 35, Image.SCALE_SMOOTH))
-            lightSlider.preferredSize = Dimension(300, 50)
-            lightSlider.background = Palette.BACKGROUND_ALT
+            val windowSlider = MaterialSlider(DefaultBoundedRangeModel(value, 0, 0, 255))
+            windowSlider.sliderBackgroundLineColor = Palette.DISABLE
+            windowSlider.sliderForegroundLineMinColor = Palette.ACCENT_NORMAL
+            windowSlider.sliderForegroundLineMaxColor = Palette.ACCENT_HIGH
+            windowSlider.thumbMinColor = Palette.ACCENT_NORMAL
+            windowSlider.thumbMaxColor = Palette.ACCENT_HIGH
+            windowSlider.thumbIcon = GUIConstants.menuLightIcons[Labels.SLIDER]
+            windowSlider.preferredSize = GUIConstants.fieldSliderSize
+            windowSlider.background = Palette.BACKGROUND_ALT
 
             val switchButton = MaterialButton()
 
@@ -77,9 +78,11 @@ class WindowPanel(private val context: Context): BasePanel(context) {
 
             fun stateButton(state: Boolean) {
                 if (state) {
+                    switchButton.backgroundColor = Palette.ACCENT_HIGH
                     switchButton.enableFaceTitle = Labels[Labels.WINDOW_GROUP].other[Labels.WINDOW_OFF] as String
                     switchButton.enableFaceIcon = GUIConstants.menuWindowIcons[Labels.WINDOW_ON]
                 } else {
+                    switchButton.backgroundColor = Palette.ACCENT_NORMAL
                     switchButton.enableFaceTitle = Labels[Labels.WINDOW_GROUP].other[Labels.WINDOW_ON] as String
                     switchButton.enableFaceIcon = GUIConstants.menuWindowIcons[Labels.WINDOW_OFF]
                 }
@@ -89,19 +92,19 @@ class WindowPanel(private val context: Context): BasePanel(context) {
 
             switchButton.addActionListener {
                 stateBool = !stateBool
-                lightSlider.value = if (stateBool) 255 else 0
+                windowSlider.value = if (stateBool) 255 else 0
 
-                listener.action(Labels.WINDOW_GROUP + ".%02X%02X".format(counter, lightSlider.value))
+                listener.action(Labels.WINDOW_GROUP + ".%02X%02X".format(counter, windowSlider.value))
             }
 
-            lightSlider.addMouseListener(object: MouseAdapter() {
+            windowSlider.addMouseListener(object: MouseAdapter() {
                 override fun mouseReleased(e: MouseEvent?) {
-                    listener.action(Labels.WINDOW_GROUP + ".%02X%02X".format(counter, lightSlider.value))
+                    listener.action(Labels.WINDOW_GROUP + ".%02X%02X".format(counter, windowSlider.value))
                 }
             } )
 
-            lightSlider.addChangeListener {
-                stateBool = lightSlider.value != 0
+            windowSlider.addChangeListener {
+                stateBool = windowSlider.value != 0
                 stateButton(stateBool)
             }
 
